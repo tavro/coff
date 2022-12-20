@@ -6,103 +6,69 @@
 // Enumeration of token types
 enum {
   T_EOF,       // End of file
-  T_PLUS,
-  T_MINUS,
-  T_MULTIPLY,
-  T_DIVIDE,
-  T_INTEGER,
+  T_PLUS,      
+  T_MINUS,     
+  T_MULTIPLY,  
+  T_DIVIDE,    
+  T_INTEGER,   
   T_ID,        // Identifier
-  T_STRING,
+  T_STRING,    
 };
 
 // Token structure
 typedef struct {
-  int type;
+  int type;      
   int value;     // Token value        (if applicable)
   char *string;  // Token string value (if applicable)
 } Token;
 
 // Global variables
 int pos = 0;    // Current position in the input text
-char text[100];
-FILE *input_file;
-
-void open_input_file(char *filename) {
-  input_file = fopen(filename, "r");
-  if (input_file == NULL) {
-    fprintf(stderr, "Error: unable to open input file\n");
-    exit(1);
-  }
-
-  memset(text, '\0', sizeof(text));
-}
-
-void close_input_file() {
-  fclose(input_file);
-}
-
-// Reads the next character from the input file
-char get_next_char() {
-  int c = fgetc(input_file);
-  if (c == EOF) {
-    return '\0';
-  }
-  else {
-    return (char)c;
-  }
-}
+char text[100]; // Input text
 
 Token get_next_token() {
   Token token;
 
-  // Reset pos to zero
-  pos = 0;
-
-  char c = get_next_char();
-
   // Skip any leading whitespace characters
-  while (isspace(c)) {
-    c = get_next_char();
+  while (isspace(text[pos])) {
+    pos++;
   }
 
   // Check for end of input
-  if (c == '\0') {
+  if (text[pos] == '\0') {
     token.type = T_EOF;
   }
-  // Check for integer value
-  else if (isdigit(c)) {
+  else if (isdigit(text[pos])) {
     token.type = T_INTEGER;
     token.value = 0;
-    while (isdigit(c)) {
+    while (isdigit(text[pos])) {
       // Compute integer value by adding the digit to the existing value multiplied by 10
-      token.value = token.value * 10 + (c - '0');
-      c = get_next_char();
+      token.value = token.value * 10 + (text[pos] - '0');
+      pos++;
     }
   }
-  else if (c == '+') {
+  else if (text[pos] == '+') {
     token.type = T_PLUS;
-    c = get_next_char();
+    pos++;
   }
-  else if (c == '-') {
+  else if (text[pos] == '-') {
     token.type = T_MINUS;
-    c = get_next_char();
+    pos++;
   }
-  else if (c == '*') {
+  else if (text[pos] == '*') {
     token.type = T_MULTIPLY;
-    c = get_next_char();
+    pos++;
   }
-  else if (c == '/') {
+  else if (text[pos] == '/') {
     token.type = T_DIVIDE;
-    c = get_next_char();
+    pos++;
   }
   // Check for identifier
-  else if (isalpha(c)) {
+  else if (isalpha(text[pos])) {
     token.type = T_ID;
-    token.value = 0;
     int start = pos;
     pos++;
-    while (isalnum(c)) {
-      c = get_next_char();
+    while (isalnum(text[pos])) {
       pos++;
     }
     int length = pos - start;
@@ -111,56 +77,43 @@ Token get_next_token() {
     token.string[length] = '\0';
   }
   // Check for string value
-  else if (c == '"') {
+  else if (text[pos] == '"') {
     token.type = T_STRING;
-    token.value = 0;
-    token.string = NULL;
     int start = pos + 1;
-    c = get_next_char();
     pos++;
-    while (c != '"') {
-      c = get_next_char();
+    while (text[pos] != '"') {
       pos++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
     strncpy(token.string, text + start, length);
     token.string[length] = '\0';
-    c = get_next_char();
     pos++;
   }
-  // Otherwise, return an error
+  // Otherwise, invalid character
   else {
-    fprintf(stderr, "Error: invalid character '%c'\n", c);
-    exit(1);
+    printf("Error: invalid character '%c'\n", text[pos]);
   }
 
   return token;
 }
 
-int main(int argc, char *argv[]) {
-  // Check for the correct number of arguments
-  if (argc != 2) {
-    fprintf(stderr, "Error: invalid number of arguments\n");
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-    exit(1);
-  }
-  open_input_file(argv[1]);
+int main() {
+  // Read input text from the user
+  printf("Enter an expression: ");
+  scanf("%s", text);
 
-  Token token;
-  do {
-    token = get_next_token();
+  Token token = get_next_token();
 
+  // Continue until the end of the input is reached
+  while (token.type != T_EOF) {
     printf("Token: type=%d, value=%d", token.type, token.value);
-    if (token.type == T_ID) {
-      printf(", string=%s", token.string);
-    }
-    else if (token.type == T_STRING) {
+    if (token.type == T_STRING) {
       printf(", string=%s", token.string);
     }
     printf("\n");
-  } while (token.type != T_EOF);
-  close_input_file();
+    token = get_next_token();
+  }
 
   return 0;
 }

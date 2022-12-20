@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 // Enumeration of token types
 enum {
@@ -9,12 +10,15 @@ enum {
   T_MULTIPLY,  
   T_DIVIDE,    
   T_INTEGER,   
+  T_ID,        // Identifier
+  T_STRING,    
 };
 
 // Token structure
 typedef struct {
   int type;      
-  int value;     // Token value (if applicable)
+  int value;     // Token value        (if applicable)
+  char *string;  // Token string value (if applicable)
 } Token;
 
 // Global variables
@@ -58,6 +62,33 @@ Token get_next_token() {
     token.type = T_DIVIDE;
     pos++;
   }
+  // Check for identifier
+  else if (isalpha(text[pos])) {
+    token.type = T_ID;
+    int start = pos;
+    pos++;
+    while (isalnum(text[pos])) {
+      pos++;
+    }
+    int length = pos - start;
+    token.string = malloc(length + 1);
+    strncpy(token.string, text + start, length);
+    token.string[length] = '\0';
+  }
+  // Check for string value
+  else if (text[pos] == '"') {
+    token.type = T_STRING;
+    int start = pos + 1;
+    pos++;
+    while (text[pos] != '"') {
+      pos++;
+    }
+    int length = pos - start;
+    token.string = malloc(length + 1);
+    strncpy(token.string, text + start, length);
+    token.string[length] = '\0';
+    pos++;
+  }
   // Otherwise, invalid character
   else {
     printf("Error: invalid character '%c'\n", text[pos]);
@@ -75,7 +106,11 @@ int main() {
 
   // Continue until the end of the input is reached
   while (token.type != T_EOF) {
-    printf("Token: type=%d, value=%d\n", token.type, token.value);
+    printf("Token: type=%d, value=%d", token.type, token.value);
+    if (token.type == T_STRING) {
+      printf(", string=%s", token.string);
+    }
+    printf("\n");
     token = get_next_token();
   }
 

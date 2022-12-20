@@ -108,7 +108,7 @@ int main() {
   // Continue until the end of the input is reached
   while (token.type != T_EOF) {
     printf("Token: type=%d, value=%d", token.type, token.value);
-    if (token.type == T_STRING) {
+    if (token.type == T_STRING || token.type == T_ID) {
       printf(", string=%s", token.string);
     }
     printf("\n");

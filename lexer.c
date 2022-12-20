@@ -1,29 +1,30 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Enumeration of token types
 enum {
   T_EOF,       // End of file
-  T_PLUS,      
-  T_MINUS,     
-  T_MULTIPLY,  
-  T_DIVIDE,    
-  T_INTEGER,   
+  T_PLUS,
+  T_MINUS,
+  T_MULTIPLY,
+  T_DIVIDE,
+  T_INTEGER,
   T_ID,        // Identifier
-  T_STRING,    
+  T_STRING,
 };
 
 // Token structure
 typedef struct {
-  int type;      
+  int type;
   int value;     // Token value        (if applicable)
   char *string;  // Token string value (if applicable)
 } Token;
 
 // Global variables
 int pos = 0;    // Current position in the input text
-char text[100]; // Input text
+char text[100];
 FILE *input_file;
 
 void open_input_file(char *filename) {
@@ -32,6 +33,8 @@ void open_input_file(char *filename) {
     fprintf(stderr, "Error: unable to open input file\n");
     exit(1);
   }
+
+  memset(text, '\0', sizeof(text));
 }
 
 void close_input_file() {
@@ -52,13 +55,16 @@ char get_next_char() {
 Token get_next_token() {
   Token token;
 
+  // Reset pos to zero
+  pos = 0;
+
   char c = get_next_char();
 
   // Skip any leading whitespace characters
   while (isspace(c)) {
     c = get_next_char();
   }
-  
+
   // Check for end of input
   if (c == '\0') {
     token.type = T_EOF;
@@ -92,10 +98,12 @@ Token get_next_token() {
   // Check for identifier
   else if (isalpha(c)) {
     token.type = T_ID;
+    token.value = 0;
     int start = pos;
     pos++;
     while (isalnum(c)) {
       c = get_next_char();
+      pos++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
@@ -105,16 +113,21 @@ Token get_next_token() {
   // Check for string value
   else if (c == '"') {
     token.type = T_STRING;
+    token.value = 0;
+    token.string = NULL;
     int start = pos + 1;
     c = get_next_char();
+    pos++;
     while (c != '"') {
       c = get_next_char();
+      pos++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
     strncpy(token.string, text + start, length);
     token.string[length] = '\0';
     c = get_next_char();
+    pos++;
   }
   // Otherwise, return an error
   else {

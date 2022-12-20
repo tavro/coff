@@ -1,68 +1,99 @@
-#include <stdio.h>
+#include "lexer.h"
 
-typedef enum {
-  T_EOF,
-  T_PLUS,
-  T_MINUS,
-  T_MULTIPLY,
-  T_DIVIDE,
-  T_INTEGER,
-  T_ID,
-  T_STRING
-} TokenType;
+Token get_next_token() {
+  Token token;
 
-typedef struct {
-  TokenType type;
-  union {
-    int integer_value;
-    char* string_value;
-  };
-} Token;
-
-int parse_expression(Token* tokens, int num_tokens) {
-  int result = 0;
-  int i = 0;
-  while (i < num_tokens) {
-    if (tokens[i].type == T_INTEGER) {
-      result = tokens[i].integer_value;
-      i++;
-      continue;
-    }
-
-    if (tokens[i].type == T_PLUS) {
-      i++;
-      result += parse_expression(tokens + i, num_tokens - i);
-      break;
-    } else if (tokens[i].type == T_MINUS) {
-      i++;
-      result -= parse_expression(tokens + i, num_tokens - i);
-      break;
-    }
-
-    if (tokens[i].type == T_MULTIPLY) {
-      i++;
-      result *= parse_expression(tokens + i, num_tokens - i);
-    } else if (tokens[i].type == T_DIVIDE) {
-      i++;
-      result /= parse_expression(tokens + i, num_tokens - i);
-    }
+  // Skip any leading whitespace characters
+  while (isspace(text[pos])) {
+    pos++;
   }
 
-  return result;
+  // Check for end of input
+  if (text[pos] == '\0') {
+    token.type = T_EOF;
+  }
+  else if (isdigit(text[pos])) {
+    token.type = T_INTEGER;
+    token.value = 0;
+    while (isdigit(text[pos])) {
+      // Compute integer value by adding the digit to the existing value multiplied by 10
+      token.value = token.value * 10 + (text[pos] - '0');
+      pos++;
+    }
+  }
+  else if (text[pos] == '+') {
+    token.type = T_PLUS;
+    pos++;
+  }
+  else if (text[pos] == '-') {
+    token.type = T_MINUS;
+    pos++;
+  }
+  else if (text[pos] == '*') {
+    token.type = T_MULTIPLY;
+    pos++;
+  }
+  else if (text[pos] == '/') {
+    token.type = T_DIVIDE;
+    pos++;
+  }
+  // Check for identifier
+  else if (isalpha(text[pos])) {
+    token.type = T_ID;
+    int start = pos;
+    pos++;
+    while (isalnum(text[pos])) {
+      pos++;
+    }
+    int length = pos - start;
+    token.string = malloc(length + 1);
+    strncpy(token.string, text + start, length);
+    token.string[length] = '\0';
+  }
+  // Check for string value
+  else if (text[pos] == '"') {
+    token.type = T_STRING;
+    int start = pos + 1;
+    pos++;
+    while (text[pos] != '"') {
+      pos++;
+    }
+    int length = pos - start;
+    token.string = malloc(length + 1);
+    strncpy(token.string, text + start, length);
+    token.string[length] = '\0';
+    pos++;
+  }
+  // Otherwise, invalid character
+  else {
+    printf("Error: invalid character '%c'\n", text[pos]);
+  }
+
+  return token;
+}
+
+void parse() {
+    Token token = get_next_token();
+    while (token.type != T_EOF) {
+        switch (token.type) {
+            case T_INTEGER:
+                printf("Token: type=%d, value=%d\n", token.type, token.value);
+                break;
+            case T_STRING:
+                printf("Token: type=%d, value=%d, string=%s", token.type, token.value, token.string);
+                break;
+            default:
+                printf("Token: type=%d are not being handled in parse()\n", token.type);
+                break;
+        }
+        token = get_next_token();
+    }
 }
 
 int main(int argc, char* argv[]) {
-  Token tokens[] = {
-    { T_INTEGER, .integer_value = 1 },
-    { T_PLUS },
-    { T_INTEGER, .integer_value = 2 },
-    { T_MINUS },
-    { T_INTEGER, .integer_value = 3 }
-  };
-  int num_tokens = sizeof(tokens) / sizeof(Token);
-
-  int result = parse_expression(tokens, num_tokens);
-  printf("Result: %d\n", result);
+  printf("Enter an expression: ");
+  scanf("%s", text);
+  parse();
 
   return 0;
 }

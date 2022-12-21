@@ -27,17 +27,18 @@ Symbol* lookup_symbol(char *name) {
   return NULL;
 }
 
+int get_type(char *name) {
+    return lookup_symbol(name).type;
+}
+
+void semantic_analyzer() {
+    Token token = get_next_token();
+    while (token.type != T_EOF) {
+        //TODO
+    }
+}
+
 int main() {
-  add_symbol("x", 1, 10);
-  add_symbol("y", 2, 20);
-  add_symbol("z", 3, 30);
-
-  Symbol *sym = lookup_symbol("y");
-  if (sym != NULL) {
-    printf("Found symbol: name=%s, type=%d, value=%d\n", sym->name, sym->type, sym->value);
-  } else {
-    printf("Symbol not found\n");
-  }
-
+  
   return 0;
 }

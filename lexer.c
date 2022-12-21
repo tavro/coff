@@ -2,90 +2,170 @@
 
 Token get_next_token() {
   Token token;
+  token.string = NULL;
+  token.value = 0;
 
-  // Skip any leading whitespace characters
+  // Skip whitespace
   while (isspace(text[pos])) {
     pos++;
   }
 
-  // Check for end of input
+  // Check for end of file
   if (text[pos] == '\0') {
     token.type = T_EOF;
+    return token;
   }
-  else if (isdigit(text[pos])) {
-    token.type = T_INTEGER;
-    token.value = 0;
-    while (isdigit(text[pos])) {
-      // Compute integer value by adding the digit to the existing value multiplied by 10
-      token.value = token.value * 10 + (text[pos] - '0');
+
+  // Check for single-character tokens
+  switch (text[pos]) {
+    case '=':
+      token.type = T_ASSIGN;
       pos++;
-    }
+      return token;
+    case '.':
+      token.type = T_DOT;
+      pos++;
+      return token;
+    case ';':
+      token.type = T_SEMICOLON;
+      pos++;
+      return token;
+    case ':':
+      token.type = T_COLON;
+      pos++;
+      return token;
+    case '[':
+      token.type = T_LEFTBRACKET;
+      pos++;
+      return token;
+    case ']':
+      token.type = T_RIGHTBRACKET;
+      pos++;
+      return token;
+    case '(':
+      token.type = T_LEFTPAR;
+      pos++;
+      return token;
+    case ')':
+      token.type = T_RIGHTPAR;
+      pos++;
+      return token;
+    case ',':
+      token.type = T_COMMA;
+      pos++;
+      return token;
+    case '<':
+      token.type = T_LESSTHAN;
+      pos++;
+      return token;
+    case '>':
+      token.type = T_GREATERTHAN;
+      pos++;
+      return token;
+    case '+':
+      token.type = T_ADD;
+      pos++;
+      return token;
+    case '-':
+      token.type = T_SUB;
+      pos++;
+      return token;
+    case '*':
+      token.type = T_MUL;
+      pos++;
+      return token;
+    case '/':
+      token.type = T_RDIV;
+      pos++;
+      return token;
   }
-  else if (text[pos] == '+') {
-    token.type = T_PLUS;
-    pos++;
-  }
-  else if (text[pos] == '-') {
-    token.type = T_MINUS;
-    pos++;
-  }
-  else if (text[pos] == '*') {
-    token.type = T_MULTIPLY;
-    pos++;
-  }
-  else if (text[pos] == '/') {
-    token.type = T_DIVIDE;
-    pos++;
-  }
-  // Check for identifier
-  else if (isalpha(text[pos])) {
-    token.type = T_ID;
+
+  // Check for reserved words and identifiers
+  if (isalpha(text[pos])) {
     int start = pos;
-    pos++;
     while (isalnum(text[pos])) {
       pos++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
-    strncpy(token.string, text + start, length);
+    strncpy(token.string, &text[start], length);
     token.string[length] = '\0';
+
+    if (strcmp(token.string, "if") == 0) {
+      token.type = T_IF;
+    } else if (strcmp(token.string, "do") == 0) {
+      token.type = T_DO;
+    } else if (strcmp(token.string, "or") == 0) {
+      token.type = T_OR;
+    } else if (strcmp(token.string, "var") == 0) {
+      token.type = T_VAR;
+    } else if (strcmp(token.string, "end") == 0) {
+      token.type = T_END;
+    } else if (strcmp(token.string, "and") == 0) {
+      token.type = T_AND;
+    } else if (strcmp(token.string, "not") == 0) {
+      token.type = T_NOT;
+    } else if (strcmp(token.string, "then") == 0) {
+      token.type = T_THEN;
+    } else if (strcmp(token.string, "else") == 0) {
+      token.type = T_ELSE;
+    } else if (strcmp(token.string, "const") == 0) {
+      token.type = T_CONST;
+    } else if (strcmp(token.string, "array") == 0) {
+      token.type = T_ARRAY;
+    } else if (strcmp(token.string, "begin") == 0) {
+      token.type = T_BEGIN;
+    } else if (strcmp(token.string, "while") == 0) {
+      token.type = T_WHILE;
+    } else if (strcmp(token.string, "elsif") == 0) {
+      token.type = T_ELSIF;
+    } else if (strcmp(token.string, "return") == 0) {
+      token.type = T_RETURN;
+    } else if (strcmp(token.string, "program") == 0) {
+      token.type = T_PROGRAM;
+    } else if (strcmp(token.string, "procedure") == 0) {
+      token.type = T_PROCEDURE;
+    } else if (strcmp(token.string, "function") == 0) {
+      token.type = T_FUNCTION;
+    } else {
+      token.type = T_ID;
+    }
+    return token;
   }
-  // Check for string value
-  else if (text[pos] == '"') {
-    token.type = T_STRING;
-    int start = pos + 1;
-    pos++;
-    while (text[pos] != '"') {
+
+  // Check for numbers
+  if (isdigit(text[pos])) {
+    int start = pos;
+    while (isdigit(text[pos])) {
       pos++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
-    strncpy(token.string, text + start, length);
+    strncpy(token.string, &text[start], length);
     token.string[length] = '\0';
-    pos++;
-  }
-  // Otherwise, invalid character
-  else {
-    printf("Error: invalid character '%c'\n", text[pos]);
+    token.type = T_INTNUM;
+    if (text[pos] == '.') {
+      pos++;
+      while (isdigit(text[pos])) {
+        pos++;
+      }
+      token.type = T_REALNUM;
+    }
+    return token;
   }
 
+  // Return error token if none of the above cases are met
+  token.type = T_ERROR;
   return token;
 }
 
 int main() {
-  // Read input text from the user
   printf("Enter an expression: ");
   scanf("%s", text);
 
   Token token = get_next_token();
-
-  // Continue until the end of the input is reached
   while (token.type != T_EOF) {
-    printf("Token: type=%d, value=%d", token.type, token.value);
-    if (token.type == T_STRING || token.type == T_ID) {
-      printf(", string=%s", token.string);
-    }
-    printf("\n");
+    printf("Token: type=%d, value=%d, string=%s\n", token.type, token.value, token.string);
     token = get_next_token();
   }
 

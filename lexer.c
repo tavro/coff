@@ -7,8 +7,16 @@ Token get_next_token() {
   
   // Skip whitespace
   while (isspace(text[pos])) {
+    column++;
+    if(text[pos] == '\n') {
+      line++;
+      column = 0;
+    }
     pos++;
   }
+
+  token.col = column;
+  token.row = line;
 
   // Check for end of file
   if (text[pos] == '\0') {
@@ -21,6 +29,7 @@ Token get_next_token() {
     if (text[pos] == token_map[i].c) {
       token.type = token_map[i].type;
       pos++;
+      column++;
       return token;
     }
   }
@@ -30,6 +39,7 @@ Token get_next_token() {
     int start = pos;
     while (isalnum(text[pos])) {
       pos++;
+      column++;
     }
     int length = pos - start;
 
@@ -56,6 +66,7 @@ Token get_next_token() {
     int start = pos;
     while (isdigit(text[pos])) {
       pos++;
+      column++;
     }
     int length = pos - start;
     token.string = malloc(length + 1);
@@ -64,8 +75,10 @@ Token get_next_token() {
     token.type = T_INTNUM;
     if (text[pos] == '.') {
       pos++;
+      column++;
       while (isdigit(text[pos])) {
         pos++;
+        column++;
       }
       token.type = T_REALNUM;
     }
@@ -151,7 +164,7 @@ int main(int argc, char **argv) {
 
   Token token = get_next_token();
   while (token.type != T_EOF) {
-    printf("Token: type=%-12s value=%-4d string=%-12s\n", token_to_string(token.type), token.value, token.string);
+    printf("Token(%-2d, %d): type=%-12s value=%-4d string=%-12s\n", token.col, token.row, token_to_string(token.type), token.value, token.string);
     token = get_next_token();
   }
 

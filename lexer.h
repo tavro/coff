@@ -150,8 +150,13 @@ struct ReservedWord {
 };
 
 typedef struct {
-  int type;      
-  int value;     // Token value        (if applicable)
+  int type;
+
+  int row;       // Line number in source file
+  int col;       // Column number in source file
+
+  int value;     // Token int value    (if applicable)
+  float val;     // Token float value  (if applicable)
   char *string;  // Token string value (if applicable)
 } Token;
 
@@ -163,6 +168,8 @@ typedef struct {
 
 // Global variables
 int pos = 0;
+int line = 0;
+int column = 0;
 char text[100];
 
 Token tokens[MAX_TOKENS];

@@ -1,4 +1,8 @@
 program nameid:
     var id: int;
-    function test (arg:int):int:;
+    function test (arg:int):int:
+    10
+    20
+    30
+    ;
 ;

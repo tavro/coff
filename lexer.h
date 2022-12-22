@@ -47,9 +47,61 @@ enum {
   T_PROGRAM,
   T_PROCEDURE,
   T_FUNCTION,
+  T_INTTYPE,
+  T_REALTYPE,
   T_INTNUM,
   T_REALNUM
 };
+
+const char* token_to_string(int token) {
+  switch (token) {
+    case T_EOF: return "T_EOF";
+    case T_ERROR: return "T_ERROR";
+    case T_EQ: return "T_EQ";
+    case T_DOT: return "T_DOT";
+    case T_SEMICOLON: return "T_SEMICOLON";
+    case T_COLON: return "T_COLON";
+    case T_LEFTBRACKET: return "T_LEFTBRACKET";
+    case T_RIGHTBRACKET: return "T_RIGHTBRACKET";
+    case T_LEFTPAR: return "T_LEFTPAR";
+    case T_RIGHTPAR: return "T_RIGHTPAR";
+    case T_COMMA: return "T_COMMA";
+    case T_LESSTHAN: return "T_LESSTHAN";
+    case T_GREATERTHAN: return "T_GREATERTHAN";
+    case T_ADD: return "T_ADD";
+    case T_SUB: return "T_SUB";
+    case T_MUL: return "T_MUL";
+    case T_RDIV: return "T_RDIV";
+    case T_IF: return "T_IF";
+    case T_DO: return "T_DO";
+    case T_ASSIGN: return "T_ASSIGN";
+    case T_NOTEQ: return "T_NOTEQ";
+    case T_OR: return "T_OR";
+    case T_VAR: return "T_VAR";
+    case T_END: return "T_END";
+    case T_AND: return "T_AND";
+    case T_IDIV: return "T_IDIV";
+    case T_MOD: return "T_MOD";
+    case T_NOT: return "T_NOT";
+    case T_THEN: return "T_THEN";
+    case T_ELSE: return "T_ELSE";
+    case T_CONST: return "T_CONST";
+    case T_ARRAY: return "T_ARRAY";
+    case T_BEGIN: return "T_BEGIN";
+    case T_WHILE: return "T_WHILE";
+    case T_ELSIF: return "T_ELSIF";
+    case T_RETURN: return "T_RETURN";
+    case T_ID: return "T_ID";
+    case T_PROGRAM: return "T_PROGRAM";
+    case T_PROCEDURE: return "T_PROCEDURE";
+    case T_FUNCTION: return "T_FUNCTION";
+    case T_INTTYPE: return "T_INTTYPE";
+    case T_REALTYPE: return "T_REALTYPE";
+    case T_INTNUM: return "T_INTNUM";
+    case T_REALNUM: return "T_REALNUM";
+    default: return "INVALID TOKEN";
+  }
+}
 
 #define TOKEN_COUNT 16
 struct TokenMap {
@@ -74,7 +126,7 @@ struct TokenMap {
   {'\0', T_EOF}
 };
 
-#define RESERVED_WORD_COUNT 12
+#define RESERVED_WORD_COUNT 16
 struct ReservedWord {
   char *word;
   int type;
@@ -86,11 +138,15 @@ struct ReservedWord {
   {"end", T_END},
   {"and", T_AND},
   {"not", T_NOT},
+  {"int", T_INTTYPE},
+  {"real", T_REALTYPE},
   {"then", T_THEN},
   {"else", T_ELSE},
   {"const", T_CONST},
   {"array", T_ARRAY},
-  {"begin", T_BEGIN}
+  {"begin", T_BEGIN},
+  {"program", T_PROGRAM},
+  {"function", T_FUNCTION}
 };
 
 typedef struct {

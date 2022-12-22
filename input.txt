@@ -1,7 +1,4 @@
-1 + 2 * 3
-Hello, world
-hello
-goodbye
-var this = 3;
-is a test
-begin
+program nameid:
+    var id: int;
+    function test (arg:int):int:;
+;

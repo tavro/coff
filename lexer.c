@@ -115,11 +115,16 @@ Token *get_token(int index) {
 }
 
 void print_symbol_table(Symbol *symbol_table, int num_symbols) {
-  printf("Symbol Table:\n");
-  printf("-------------\n");
+  printf("\n");
+  printf("=============================\n");
+  printf("Symbol Table\n");
+  printf("=============================\n");
+  printf("name        type        value\n");
+  printf("-----------------------------\n");
+
   for (int i = 0; i < num_symbols; i++) {
     Symbol symbol = symbol_table[i];
-    printf("%s\t%d\t%d\n", symbol.name, symbol.type, symbol.value);
+    printf("%-12s%-12s%d\n", symbol.name, token_to_string(symbol.type), symbol.value);
   }
 }
 
@@ -146,7 +151,7 @@ int main(int argc, char **argv) {
 
   Token token = get_next_token();
   while (token.type != T_EOF) {
-    printf("Token: type=%d, value=%d, string=%s\n", token.type, token.value, token.string);
+    printf("Token: type=%-12s value=%-4d string=%-12s\n", token_to_string(token.type), token.value, token.string);
     token = get_next_token();
   }
 

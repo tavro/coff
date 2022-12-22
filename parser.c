@@ -1,38 +1,81 @@
-#include "lexer.h"
 #include "parser.h"
 
-void add_symbol(char *name, int type, int value) {
-  symbol_table[num_symbols].name = strdup(name);
-  symbol_table[num_symbols].type = type;
-  symbol_table[num_symbols].value = value;
-  num_symbols++;
+AstNode* createAstNode(int type, int intval, char* strval) {
+  AstNode* node = (AstNode*) malloc(sizeof(AstNode));
+  node->type = type;
+  node->intval = intval;
+  node->strval = strval;
+  node->left = NULL;
+  node->right = NULL;
+  return node;
 }
 
-Symbol* lookup_symbol(char *name) {
-  for (int i = 0; i < num_symbols; i++) {
-    if (strcmp(symbol_table[i].name, name) == 0) {
-      return &symbol_table[i];
+void printAst(AstNode* root) {
+  printf("%d\n", root->type);
+
+  if (root->left != NULL) {
+    printAst(root->left);
+  }
+  if (root->right != NULL) {
+    printAst(root->right);
+  }
+}
+
+AstNode* parseTokens(Token* tokens, int numTokens) {
+  AstNode* node = NULL;
+  int currentToken = 0;
+
+  while (currentToken < numTokens) {
+    Token current = tokens[currentToken];
+    switch (current.type) {
+      case T_PROGRAM:
+        node = createAstNode(AST_PROGRAM, current.value, current.string);
+        currentToken++;
+        break;
+      case T_ID:
+        currentToken++;
+        break;
+      case T_COLON:
+        currentToken++;
+        break;
+      case T_VAR:
+        // create a new AST_VAR node and set it as the left child of the current node
+        node->left = createAstNode(AST_VARIABLE, current.value, current.string);
+        currentToken++;
+        break;
+      case T_INT:
+        // set the type of the left child of the current node to AST_INT
+        currentToken++;
+        break;
+      case T_SEMICOLON:
+        // move on to the next statement
+        currentToken++;
+        break;
+      case T_FUNCTION:
+        // create a new AST_FUNCTION node and set it as the right child of the current node
+        node->right = createAstNode(AST_FUNCTION, current.value, current.string);
+        currentToken++;
+        break;
+      case T_LEFTPAR:
+        currentToken++;
+        break;
+      case T_RIGHTPAR:
+        currentToken++;
+        break;
+      default:
+        // handle other token types as needed
+        currentToken++;
+        break;
     }
   }
-  return NULL;
+
+  return node;
 }
 
-int get_type(char *name) {
-    return lookup_symbol(name)->type;
-}
-
-void parse() {
-  Token token = get_next_token();
-  while (token.type != T_EOF) {
-    //TODO
-  }
-}
-
-
-int main(int argc, char* argv[]) {
-  printf("Enter an expression: ");
-  scanf("%s", text);
-  parse();
+int main(int argc, char **argv) {
+  int numTokens = sizeof(tokenseq) / sizeof(Token);
+  AstNode* root = parseTokens(tokenseq, numTokens);
+  printAst(root);
 
   return 0;
 }

@@ -4,6 +4,7 @@ Token get_next_token() {
   Token token;
   token.string = NULL;
   token.ival = 0;
+  token.rval = 0.000;
   
   // Skip whitespace
   while (isspace(text[pos])) {
@@ -87,6 +88,7 @@ Token get_next_token() {
 
     if(token.type == T_INTNUM) {
       token.ival = atoi(token.string);
+      token.rval = (float)token.ival;
     }
     else if(token.type == T_REALNUM) {
       token.rval = atof(token.string);
@@ -201,8 +203,8 @@ int main(int argc, char **argv) {
 
   Token token = get_next_token();
   while (token.type != T_EOF) {
-    printf("Token(%-2d, %-2d): type=%-12s ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token_to_string(token.type), token.ival, token.rval, token.string);
-    fprintf(fp, "Token(%-2d, %-2d): type=%-12s ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token_to_string(token.type), token.ival, token.rval, token.string);
+    printf("Token(%-2d, %-2d): type=%-3d(%-12s) ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token.type, token_to_string(token.type), token.ival, token.rval, token.string);
+    fprintf(fp, "Token(%-2d, %-2d): type=%-3d(%-12s) ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token.type, token_to_string(token.type), token.ival, token.rval, token.string);
     token = get_next_token();
   }
 

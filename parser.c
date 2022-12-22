@@ -35,23 +35,44 @@ void print_ast(AstNode *node) {
 }
 
 int main(int argc, char **argv) {
-  Token int_token;
-  int_token.type = T_INTNUM;
-  int_token.row = 1;
-  int_token.col = 4;
-  int_token.ival = 42;
-  int_token.string = NULL;
+  FILE *input_file = fopen("./output/lexer-tokens-out.txt", "r");
+  if (input_file == NULL) {
+    fprintf(stderr, "Error: Unable to open input file\n");
+    return 1;
+  }
 
-  Token real_token;
-  real_token.type = T_REALNUM;
-  real_token.row = 2;
-  real_token.col = 2;
-  real_token.rval = 42.123;
-  real_token.string = NULL;
+  Token tokens[999];
+  int num_tokens = 0;
 
-  AstNode *ast1 = parse_factor(int_token);
-  AstNode *ast2 = parse_factor(real_token);
-  print_ast(ast1);
-  print_ast(ast2);
+  // Read tokens from file
+  char line[256];
+  while (fgets(line, sizeof(line), input_file) != NULL) {
+    Token token;
+    char type_string[12];
+    sscanf(line, "Token(%d , %d ): type=%d (%12s) ival=%d rval=%f string=%s", &token.col, &token.row, &token.type, type_string, &token.ival, &token.rval, token.string);
+    tokens[num_tokens++] = token;
+  }
+  fclose(input_file);
+
+  // Print array of tokens
+  printf("\n");
+  printf("=============================\n");
+  printf("Array of Tokens\n");
+  printf("=============================\n");
+  printf("pos        type        ival    rval        string\n");
+  printf("-----------------------------\n");
+  for (int i = 0; i < num_tokens; i++) {
+    Token token = tokens[i];
+    printf("(%-2d, %-2d):  %-12d%-8d%-12f%-12s\n", token.col, token.row, token.type, token.ival, token.rval, token.string);
+  }
+
+  for (int i = 0; i < num_tokens; i++) {
+    Token token = tokens[i];
+    if(token.type == T_INTNUM || token.type == T_REALNUM) {
+      AstNode *ast = parse_factor(token);
+      print_ast(ast);
+    }
+  }
+
   return 0;
 }

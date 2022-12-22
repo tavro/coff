@@ -1,0 +1,13 @@
+=============================
+Symbol Table
+=============================
+name        type        value
+-----------------------------
+program     T_PROGRAM   0
+nameid      T_ID        0
+var         T_VAR       0
+id          T_ID        0
+int         T_INTTYPE   0
+function    T_FUNCTION  0
+test        T_ID        0
+arg         T_ID        0

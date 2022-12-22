@@ -4,3 +4,4 @@ hello
 goodbye
 var this = 3;
 is a test
+begin

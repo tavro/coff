@@ -6,7 +6,6 @@
 #define MAX_SYMBOLS 1000
 #define MAX_TOKENS  1000
 
-// Enumeration of token types
 enum {
   T_EOF,
   T_ERROR,
@@ -52,6 +51,48 @@ enum {
   T_REALNUM
 };
 
+#define TOKEN_COUNT 16
+struct TokenMap {
+  char c;
+  int type;
+} token_map[TOKEN_COUNT] = {
+  {'=', T_ASSIGN},
+  {'.', T_DOT},
+  {';', T_SEMICOLON},
+  {':', T_COLON},
+  {'[', T_LEFTBRACKET},
+  {']', T_RIGHTBRACKET},
+  {'(', T_LEFTPAR},
+  {')', T_RIGHTPAR},
+  {',', T_COMMA},
+  {'<', T_LESSTHAN},
+  {'>', T_GREATERTHAN},
+  {'+', T_ADD},
+  {'-', T_SUB},
+  {'*', T_MUL},
+  {'/', T_RDIV},
+  {'\0', T_EOF}
+};
+
+#define RESERVED_WORD_COUNT 12
+struct ReservedWord {
+  char *word;
+  int type;
+} reserved_words[RESERVED_WORD_COUNT] = {
+  {"if", T_IF},
+  {"do", T_DO},
+  {"or", T_OR},
+  {"var", T_VAR},
+  {"end", T_END},
+  {"and", T_AND},
+  {"not", T_NOT},
+  {"then", T_THEN},
+  {"else", T_ELSE},
+  {"const", T_CONST},
+  {"array", T_ARRAY},
+  {"begin", T_BEGIN}
+};
+
 typedef struct {
   int type;      
   int value;     // Token value        (if applicable)
@@ -65,8 +106,8 @@ typedef struct {
 } Symbol;
 
 // Global variables
-int pos = 0;    // Current position in the input text
-char text[100]; // Input text
+int pos = 0;
+char text[100];
 
 Token tokens[MAX_TOKENS];
 int num_tokens = 0;
@@ -74,12 +115,15 @@ int num_tokens = 0;
 Symbol symbol_table[MAX_SYMBOLS];
 int num_symbols = 0;
 
+#define TOKEN_STRING_BUFFER_SIZE 128
+char token_string_buffer[TOKEN_STRING_BUFFER_SIZE];
+
+// Function declarations
 Token get_next_token();
 Token* get_token(int index);
-void add_token(int type, int value, char* str);
 
 Symbol* lookup_symbol(char *name);
 
+void add_token(int type, int value, char* str);
 void add_symbol(char *name, int type, int value);
-
 void print_symbol_table(Symbol *symbol_table, int num_symbols);

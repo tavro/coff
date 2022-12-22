@@ -1,26 +1,26 @@
-Token(0 , 0 ): type=37 (T_PROGRAM   ) ival=0    rval=0.000000     string=(null)      
-Token(8 , 0 ): type=36 (T_ID        ) ival=0    rval=0.000000     string=nameid      
-Token(14, 0 ): type=5  (T_COLON     ) ival=0    rval=0.000000     string=(null)      
-Token(4 , 1 ): type=22 (T_VAR       ) ival=0    rval=0.000000     string=(null)      
-Token(8 , 1 ): type=36 (T_ID        ) ival=0    rval=0.000000     string=id          
-Token(10, 1 ): type=5  (T_COLON     ) ival=0    rval=0.000000     string=(null)      
-Token(12, 1 ): type=40 (T_INTTYPE   ) ival=0    rval=0.000000     string=(null)      
-Token(15, 1 ): type=4  (T_SEMICOLON ) ival=0    rval=0.000000     string=(null)      
-Token(4 , 2 ): type=39 (T_FUNCTION  ) ival=0    rval=0.000000     string=(null)      
-Token(13, 2 ): type=36 (T_ID        ) ival=0    rval=0.000000     string=test        
-Token(18, 2 ): type=8  (T_LEFTPAR   ) ival=0    rval=0.000000     string=(null)      
-Token(19, 2 ): type=36 (T_ID        ) ival=0    rval=0.000000     string=arg         
-Token(22, 2 ): type=5  (T_COLON     ) ival=0    rval=0.000000     string=(null)      
-Token(23, 2 ): type=40 (T_INTTYPE   ) ival=0    rval=0.000000     string=(null)      
-Token(26, 2 ): type=9  (T_RIGHTPAR  ) ival=0    rval=0.000000     string=(null)      
-Token(27, 2 ): type=5  (T_COLON     ) ival=0    rval=0.000000     string=(null)      
-Token(28, 2 ): type=40 (T_INTTYPE   ) ival=0    rval=0.000000     string=(null)      
-Token(31, 2 ): type=5  (T_COLON     ) ival=0    rval=0.000000     string=(null)      
-Token(4 , 3 ): type=42 (T_INTNUM    ) ival=10   rval=10.000000    string=10          
-Token(4 , 4 ): type=42 (T_INTNUM    ) ival=20   rval=20.000000    string=20          
-Token(4 , 5 ): type=42 (T_INTNUM    ) ival=30   rval=30.000000    string=30          
-Token(4 , 6 ): type=43 (T_REALNUM   ) ival=10   rval=10.123000    string=10.123      
-Token(4 , 7 ): type=43 (T_REALNUM   ) ival=11   rval=11.234000    string=11.234      
-Token(4 , 8 ): type=43 (T_REALNUM   ) ival=13   rval=13.345000    string=13.345      
-Token(4 , 9 ): type=4  (T_SEMICOLON ) ival=0    rval=0.000000     string=(null)      
-Token(0 , 10): type=4  (T_SEMICOLON ) ival=0    rval=0.000000     string=(null)      
+Token(0, 0): type=37(T_PROGRAM) ival=0 rval=0.000000 string=(null)
+Token(8, 0): type=36(T_ID) ival=0 rval=0.000000 string=nameid
+Token(14, 0): type=5(T_COLON) ival=0 rval=0.000000 string=(null)
+Token(4, 1): type=22(T_VAR) ival=0 rval=0.000000 string=(null)
+Token(8, 1): type=36(T_ID) ival=0 rval=0.000000 string=id
+Token(10, 1): type=5(T_COLON) ival=0 rval=0.000000 string=(null)
+Token(12, 1): type=40(T_INTTYPE) ival=0 rval=0.000000 string=(null)
+Token(15, 1): type=4(T_SEMICOLON) ival=0 rval=0.000000 string=(null)
+Token(4, 2): type=39(T_FUNCTION) ival=0 rval=0.000000 string=(null)
+Token(13, 2): type=36(T_ID) ival=0 rval=0.000000 string=test
+Token(18, 2): type=8(T_LEFTPAR) ival=0 rval=0.000000 string=(null)
+Token(19, 2): type=36(T_ID) ival=0 rval=0.000000 string=arg
+Token(22, 2): type=5(T_COLON) ival=0 rval=0.000000 string=(null)
+Token(23, 2): type=40(T_INTTYPE) ival=0 rval=0.000000 string=(null)
+Token(26, 2): type=9(T_RIGHTPAR) ival=0 rval=0.000000 string=(null)
+Token(27, 2): type=5(T_COLON) ival=0 rval=0.000000 string=(null)
+Token(28, 2): type=40(T_INTTYPE) ival=0 rval=0.000000 string=(null)
+Token(31, 2): type=5(T_COLON) ival=0 rval=0.000000 string=(null)
+Token(4, 3): type=42(T_INTNUM) ival=10 rval=10.000000 string=10
+Token(4, 4): type=42(T_INTNUM) ival=20 rval=20.000000 string=20
+Token(4, 5): type=42(T_INTNUM) ival=30 rval=30.000000 string=30
+Token(4, 6): type=43(T_REALNUM) ival=10 rval=10.123000 string=10.123
+Token(4, 7): type=43(T_REALNUM) ival=11 rval=11.234000 string=11.234
+Token(4, 8): type=43(T_REALNUM) ival=13 rval=13.345000 string=13.345
+Token(4, 9): type=4(T_SEMICOLON) ival=0 rval=0.000000 string=(null)
+Token(0, 10): type=4(T_SEMICOLON) ival=0 rval=0.000000 string=(null)

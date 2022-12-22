@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
   Token token = get_next_token();
   while (token.type != T_EOF) {
     printf("Token(%-2d, %-2d): type=%-3d(%-12s) ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token.type, token_to_string(token.type), token.ival, token.rval, token.string);
-    fprintf(fp, "Token(%-2d, %-2d): type=%-3d(%-12s) ival=%-4d rval=%-12f string=%-12s\n", token.col, token.row, token.type, token_to_string(token.type), token.ival, token.rval, token.string);
+    fprintf(fp, "Token(%d, %d): type=%d(%s) ival=%d rval=%f string=%s\n", token.col, token.row, token.type, token_to_string(token.type), token.ival, token.rval, token.string);
     token = get_next_token();
   }
 

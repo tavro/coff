@@ -155,8 +155,8 @@ typedef struct {
   int row;       // Line number in source file
   int col;       // Column number in source file
 
-  int value;     // Token int value    (if applicable)
-  float val;     // Token float value  (if applicable)
+  int ival;     // Token int value    (if applicable)
+  float rval;     // Token float value  (if applicable)
   char *string;  // Token string value (if applicable)
 } Token;
 

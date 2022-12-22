@@ -1,5 +1,6 @@
 #include "lexer.h"
 
+
 Token get_next_token() {
   Token token;
   token.string = NULL;
@@ -11,7 +12,7 @@ Token get_next_token() {
   }
 
   // Check for end of file
-  if (text[pos] == '\0') {
+  if (text[pos] == '\0' || text[pos] == '\n') {
     token.type = T_EOF;
     return token;
   }
@@ -130,6 +131,8 @@ Token get_next_token() {
     } else {
       token.type = T_ID;
     }
+
+    add_symbol(token.string, token.type, 0);
     return token;
   }
 
@@ -156,18 +159,102 @@ Token get_next_token() {
 
   // Return error token if none of the above cases are met
   token.type = T_ERROR;
+  printf("%d", text[pos]);
   return token;
 }
 
+Symbol* lookup_symbol(char *name) {
+  for (int i = 0; i < num_symbols; i++) {
+    if (strcmp(symbol_table[i].name, name) == 0) {
+      return &symbol_table[i];
+    }
+  }
+  return NULL;
+}
+
+void add_symbol(char *name, int type, int value) {
+  if(!lookup_symbol(name)) {
+    symbol_table[num_symbols].name = strdup(name);
+    symbol_table[num_symbols].type = type;
+    symbol_table[num_symbols].value = value;
+    num_symbols++;
+  }
+}
+
+void add_token(int type, int value, char* str) {
+  if (num_tokens == MAX_TOKENS) {
+    // Error: token array is full
+    return;
+  }
+  tokens[num_tokens].type = type;
+  tokens[num_tokens].value = value;
+  tokens[num_tokens].string = strdup(str);
+  num_tokens++;
+}
+
+Token *get_token(int index) {
+  if (index < 0 || index >= num_tokens) {
+    // Error: index out of range
+    return NULL;
+  }
+  return &tokens[index];
+}
+
+void print_symbol_table(Symbol *symbol_table, int num_symbols) {
+  printf("Symbol Table:\n");
+  printf("-------------\n");
+  for (int i = 0; i < num_symbols; i++) {
+    Symbol symbol = symbol_table[i];
+    printf("%s\t%d\t%d\n", symbol.name, symbol.type, symbol.value);
+  }
+}
+
+/*
 int main() {
   printf("Enter an expression: ");
   scanf("%s", text);
+
+  Token token = get_next_token();
+  //add_token(token.type, token.value, token.string);
+  while (token.type != T_EOF) {
+    printf("Token: type=%d, value=%d, string=%s\n", token.type, token.value, token.string);
+    token = get_next_token();
+    //add_token(token.type, token.value, token.string);
+  }
+
+  print_symbol_table(symbol_table, num_symbols);
+
+  return 0;
+}
+*/
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("Usage: %s <filename>\n", argv[0]);
+    return 1;
+  }
+
+  char *filename = argv[1];
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) {
+    printf("Error: Could not open file '%s'\n", filename);
+    return 1;
+  }
+
+  // Read the input text from the file
+  char line[100];
+  while (fgets(line, sizeof(line), file)) {
+    strcat(text, line);
+  }
+
+  fclose(file);
 
   Token token = get_next_token();
   while (token.type != T_EOF) {
     printf("Token: type=%d, value=%d, string=%s\n", token.type, token.value, token.string);
     token = get_next_token();
   }
+
+  print_symbol_table(symbol_table, num_symbols);
 
   return 0;
 }

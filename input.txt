@@ -1,4 +1,6 @@
 1 + 2 * 3
-"Hello, world!"
+Hello, world
 hello
 goodbye
+var this = 3;
+is a test

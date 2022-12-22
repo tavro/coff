@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MAX_SYMBOLS 1000
+#define MAX_TOKENS  1000
+
 // Enumeration of token types
 enum {
   T_EOF,
@@ -49,15 +52,34 @@ enum {
   T_REALNUM
 };
 
-// Token structure
 typedef struct {
   int type;      
   int value;     // Token value        (if applicable)
   char *string;  // Token string value (if applicable)
 } Token;
 
+typedef struct {
+  char *name;
+  int type;
+  int value;
+} Symbol;
+
 // Global variables
 int pos = 0;    // Current position in the input text
 char text[100]; // Input text
 
+Token tokens[MAX_TOKENS];
+int num_tokens = 0;
+
+Symbol symbol_table[MAX_SYMBOLS];
+int num_symbols = 0;
+
 Token get_next_token();
+Token* get_token(int index);
+void add_token(int type, int value, char* str);
+
+Symbol* lookup_symbol(char *name);
+
+void add_symbol(char *name, int type, int value);
+
+void print_symbol_table(Symbol *symbol_table, int num_symbols);

@@ -5,6 +5,50 @@
 
 #define MAX_LINE_LENGTH 1024
 
+Token tokens[999];
+int num_tokens = 0;
+
+AstNode* parse_var(int* index) {
+  AstNode* var = malloc(sizeof(AstNode));
+  var->type = AST_VAR;
+  var->char_val = "test2";//tokens[++(*index)].string;
+  var->left = NULL;
+  var->right = NULL;
+
+  (*index)+=3; // skip ':', 'int' and ';'
+
+  return var;
+}
+
+AstNode* parse_function(int* index) {
+  AstNode* function = malloc(sizeof(AstNode));
+  function->type = AST_FUNC;
+  function->char_val = "test3";//tokens[++(*index)].string;
+  function->left = NULL;
+  function->right = NULL;
+
+  return function;
+}
+
+AstNode* parse_program(int* index) {
+  AstNode* program = malloc(sizeof(AstNode));
+  program->type = AST_PROGRAM;
+  program->char_val = "test";//tokens[++(*index)].string;
+  program->left = NULL;
+  program->right = NULL;
+
+  while (*index < num_tokens) {
+    (*index)++;
+    if (tokens[*index].type == T_VAR) {
+      program->left = parse_var(index);
+    } else if (tokens[*index].type == T_FUNCTION) {
+      program->right = parse_function(index);
+    }
+  }
+
+  return program;
+}
+
 AstNode *parse_factor(Token token) {
   AstNode *node;
   switch (token.type) {
@@ -25,13 +69,26 @@ AstNode *parse_factor(Token token) {
   return node;
 }
 
-void print_ast(AstNode *node) {
+void print_ast(AstNode *node, char* indent) {
   switch (node->type) {
     case AST_INTEGER:
       printf("AST_INTEGER: %d\n", node->data.value.int_val);
       break;
     case AST_REAL:
       printf("AST_REAL: %f\n", node->data.value.real_val);
+      break;
+    case AST_PROGRAM:
+      printf("AST_PROGRAM: %s\n", node->char_val);
+      if(node->left != NULL)
+        print_ast(node->left, "    ");
+      if(node->right != NULL)
+        print_ast(node->right, "    ");
+      break;
+    case AST_VAR:
+      printf("%sAST_VAR: %s\n", indent, node->char_val);
+      break;
+    case AST_FUNC:
+      printf("%sAST_FUNCTION: %s\n", indent, node->char_val);
       break;
     default:
       fprintf(stderr, "Unexpected AST type '%d'\n", node->type);
@@ -46,8 +103,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Token tokens[999];
-  int num_tokens = 0;
   char line[1024];
 
   while (fgets(line, sizeof(line), input_file) != NULL) {
@@ -84,9 +139,13 @@ int main(int argc, char **argv) {
     Token token = tokens[i];
     if(token.type == T_INTNUM || token.type == T_REALNUM) {
       AstNode *ast = parse_factor(token);
-      print_ast(ast);
+      print_ast(ast, "");
     }
   }
+
+  int index = 0;
+  AstNode* root = parse_program(&index);
+  print_ast(root, "");
 
   return 0;
 }

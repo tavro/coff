@@ -1,0 +1,3 @@
+AST_PROGRAM: nameid
+    AST_VAR: id
+    AST_FUNCTION: test

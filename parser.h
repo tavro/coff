@@ -2,6 +2,9 @@
 #include <stdlib.h>
 
 enum AstNodeType {
+    AST_PROGRAM,
+    AST_VAR,
+    AST_FUNC,
     AST_NODE,
     AST_STATEMENT,
     AST_EXPRESSION,
@@ -43,9 +46,9 @@ enum AstNodeType {
 };
 typedef enum AstNodeType AstNodeType;
 
-
 typedef struct AstNode {
   AstNodeType type;
+  char* char_val;
   union {
     // AST_INTEGER, AST_REAL
     union {
@@ -53,6 +56,8 @@ typedef struct AstNode {
       float real_val;
     } value;
   } data;
+  struct AstNode* left;
+  struct AstNode* right;
 } AstNode;
 
 enum {

@@ -4,6 +4,7 @@
 enum AstNodeType {
     AST_PROGRAM,
     AST_VAR,
+    AST_ARG,
     AST_FUNC,
     AST_NODE,
     AST_STATEMENT,
@@ -17,6 +18,7 @@ enum AstNodeType {
     AST_ID,
     AST_INDEXED,
     AST_ADD,
+    AST_CALL,
     AST_SUB,
     AST_OR,
     AST_AND,
@@ -48,16 +50,21 @@ typedef enum AstNodeType AstNodeType;
 
 typedef struct AstNode {
   AstNodeType type;
-  char* char_val;
+
+  char* val_type;
   union {
     // AST_INTEGER, AST_REAL
     union {
       int int_val;
       float real_val;
+      char* char_val;
     } value;
   } data;
   struct AstNode* left;
   struct AstNode* right;
+
+  struct AstNode** children;
+  int num_children;
 } AstNode;
 
 enum {
@@ -86,6 +93,7 @@ enum {
   T_VAR,
   T_END,
   T_AND,
+  T_ARG,
   T_IDIV,
   T_MOD,
   T_NOT,
@@ -96,6 +104,7 @@ enum {
   T_BEGIN,
   T_WHILE,
   T_ELSIF,
+  T_PRINT,
   T_RETURN,
   T_ID,
   T_PROGRAM,

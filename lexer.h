@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) 2022 Isak Horvath <isakhorvath@gmail.com>
+ *
+ * The Coff Compiler is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation
+ *
+ */
+
+#ifndef COFF_LEXER_H
+#define COFF_LEXER_H
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -32,6 +44,7 @@ enum {
   T_VAR,
   T_END,
   T_AND,
+  T_ARG,
   T_IDIV,
   T_MOD,
   T_NOT,
@@ -42,6 +55,7 @@ enum {
   T_BEGIN,
   T_WHILE,
   T_ELSIF,
+  T_PRINT,
   T_RETURN,
   T_ID,
   T_PROGRAM,
@@ -80,6 +94,7 @@ const char* token_to_string(int token) {
     case T_VAR: return "T_VAR";
     case T_END: return "T_END";
     case T_AND: return "T_AND";
+    case T_ARG: return "T_ARG";
     case T_IDIV: return "T_IDIV";
     case T_MOD: return "T_MOD";
     case T_NOT: return "T_NOT";
@@ -90,6 +105,7 @@ const char* token_to_string(int token) {
     case T_BEGIN: return "T_BEGIN";
     case T_WHILE: return "T_WHILE";
     case T_ELSIF: return "T_ELSIF";
+    case T_PRINT: return "T_PRINT";
     case T_RETURN: return "T_RETURN";
     case T_ID: return "T_ID";
     case T_PROGRAM: return "T_PROGRAM";
@@ -126,7 +142,7 @@ struct TokenMap {
   {'\0', T_EOF}
 };
 
-#define RESERVED_WORD_COUNT 16
+#define RESERVED_WORD_COUNT 19
 struct ReservedWord {
   char *word;
   int type;
@@ -138,15 +154,18 @@ struct ReservedWord {
   {"end", T_END},
   {"and", T_AND},
   {"not", T_NOT},
+  {"arg", T_ARG},
   {"int", T_INTTYPE},
   {"real", T_REALTYPE},
   {"then", T_THEN},
   {"else", T_ELSE},
+  {"func", T_FUNCTION},
   {"const", T_CONST},
   {"array", T_ARRAY},
   {"begin", T_BEGIN},
-  {"program", T_PROGRAM},
-  {"function", T_FUNCTION}
+  {"print", T_PRINT},
+  {"return", T_RETURN},
+  {"program", T_PROGRAM}
 };
 
 typedef struct {
@@ -190,3 +209,5 @@ Symbol* lookup_symbol(char *name);
 void add_token(int type, int value, char* str);
 void add_symbol(char *name, int type, int value);
 void print_symbol_table(Symbol *symbol_table, int num_symbols);
+
+#endif

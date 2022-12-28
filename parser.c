@@ -8,41 +8,117 @@
 Token tokens[999];
 int num_tokens = 0;
 
+void add_child_node(AstNode* parent, AstNode* child) {
+  if (parent->children == NULL) {
+    parent->children = malloc(sizeof(AstNode*));
+    if (parent->children == NULL) {
+      fprintf(stderr, "Error allocating memory for child node\n");
+      exit(1);
+    }
+    parent->num_children = 0;
+  } else {
+    parent->children = realloc(parent->children, (parent->num_children + 1) * sizeof(AstNode*));
+    if (parent->children == NULL) {
+      fprintf(stderr, "Error allocating memory for child node\n");
+      exit(1);
+    }
+  }
+  
+  parent->children[parent->num_children] = child;
+  parent->num_children++;
+}
+
+// var type name;
 AstNode* parse_var(int* index) {
   AstNode* var = malloc(sizeof(AstNode));
   var->type = AST_VAR;
-  var->char_val = "test2";//tokens[++(*index)].string;
+
+  if(tokens[++(*index)].type == T_INTTYPE) {
+    var->val_type = "INT_TYPE";
+  }
+
+  var->data.value.char_val = tokens[++(*index)].string;
   var->left = NULL;
   var->right = NULL;
 
-  (*index)+=3; // skip ':', 'int' and ';'
+  (*index)++; // skip ;
 
   return var;
 }
 
+AstNode* parse_arguments(int* index) {
+  (*index)++; // skip (
+  
+  AstNode* argument = malloc(sizeof(AstNode));
+  argument->type = AST_ARG;
+  (*index)++; // skip arg
+
+  if(tokens[++(*index)].type == T_INTTYPE) {
+    argument->val_type = "INT_TYPE";
+  }
+
+  argument->data.value.char_val = tokens[++(*index)].string;
+  argument->left = NULL;
+  argument->right = NULL;
+
+  (*index)++; // skip )
+  return argument;
+}
+
+// func int (arg int bizz) bar:
 AstNode* parse_function(int* index) {
   AstNode* function = malloc(sizeof(AstNode));
   function->type = AST_FUNC;
-  function->char_val = "test3";//tokens[++(*index)].string;
-  function->left = NULL;
-  function->right = NULL;
+
+  if(tokens[++(*index)].type == T_INTTYPE) {
+    function->val_type = "INT_TYPE";
+  }
+
+  function->left = parse_arguments(index);
+
+  function->data.value.char_val = tokens[++(*index)].string;
+
+  (*index)++; // skip :
+  AstNode* ret = malloc(sizeof(AstNode));
+  ret->type = AST_RETURN;
+  (*index)++; // skip return
+  ret->data.value.char_val = tokens[++(*index)].string;
+  ret->left = NULL;
+  ret->right = NULL;
+
+  function->right = ret;
 
   return function;
 }
 
+// program name:;
 AstNode* parse_program(int* index) {
   AstNode* program = malloc(sizeof(AstNode));
   program->type = AST_PROGRAM;
-  program->char_val = "test";//tokens[++(*index)].string;
+  program->data.value.char_val = tokens[++(*index)].string; //program id
   program->left = NULL;
   program->right = NULL;
+  program->children = NULL;
+  program->num_children = 0;
 
   while (*index < num_tokens) {
     (*index)++;
     if (tokens[*index].type == T_VAR) {
-      program->left = parse_var(index);
+      add_child_node(program, parse_var(index));
     } else if (tokens[*index].type == T_FUNCTION) {
-      program->right = parse_function(index);
+      add_child_node(program, parse_function(index));
+    } else if (tokens[*index].type == T_ID) {
+      (*index)++;
+      if(tokens[*index].type == T_ASSIGN) {
+        AstNode* assignment = malloc(sizeof(AstNode));
+        assignment->type = AST_ASSIGN;
+        assignment->val_type = tokens[--(*index)].string;
+        (*index)++;
+        assignment->data.value.int_val = tokens[++(*index)].ival;
+        assignment->left = NULL;
+        assignment->right = NULL;
+        add_child_node(program, assignment);
+      }
     }
   }
 
@@ -78,17 +154,31 @@ void print_ast(AstNode *node, char* indent) {
       printf("AST_REAL: %f\n", node->data.value.real_val);
       break;
     case AST_PROGRAM:
-      printf("AST_PROGRAM: %s\n", node->char_val);
-      if(node->left != NULL)
-        print_ast(node->left, "    ");
-      if(node->right != NULL)
-        print_ast(node->right, "    ");
+      printf("AST_PROGRAM: %s\n", node->data.value.char_val);
+      // Iterate over the child nodes
+      for (int i = 0; i < node->num_children; i++) {
+        AstNode* child = node->children[i];
+        print_ast(child, "    ");
+      }
       break;
     case AST_VAR:
-      printf("%sAST_VAR: %s\n", indent, node->char_val);
+      printf("%sAST_VAR (%s): %s\n", indent, node->val_type, node->data.value.char_val);
       break;
     case AST_FUNC:
-      printf("%sAST_FUNCTION: %s\n", indent, node->char_val);
+      printf("%sAST_FUNCTION (%s): %s\n", indent, node->val_type, node->data.value.char_val);
+      if(node->left != NULL)
+        print_ast(node->left, "        ");
+      if(node->right != NULL)
+        print_ast(node->right, "        ");
+      break;
+    case AST_ARG:
+      printf("%sAST_ARG (%s): %s\n", indent, node->val_type, node->data.value.char_val);
+      break;
+    case AST_RETURN:
+      printf("%sAST_RETURN: %s\n", indent, node->data.value.char_val);
+      break;
+    case AST_ASSIGN:
+      printf("%sAST_ASSIGN: %s=%d\n", indent, node->val_type, node->data.value.int_val);
       break;
     default:
       fprintf(stderr, "Unexpected AST type '%d'\n", node->type);
@@ -107,11 +197,20 @@ int main(int argc, char **argv) {
 
   while (fgets(line, sizeof(line), input_file) != NULL) {
     Token token;
-    char type_string[12];
-    sscanf(line, "Token(%d, %d): type=%d(%s) ival=%*d rval=%*f string=%s", &token.col, &token.row, &token.type, type_string, token.string);
+    sscanf(line, "Token(%d, %d): type=%d(%*s) ival=%*d rval=%*f string=%*s", &token.col, &token.row, &token.type);
 
     char* ival_str = strstr(line, "ival=");
     char* rval_str = strstr(line, "rval=");
+
+    char* sval_str = strstr(line, "string=");
+    if(strstr(sval_str, "string=(null)") == NULL) {
+      sval_str = sval_str+7;
+      sval_str[strlen(sval_str)-1] = '\0';
+      token.string = strdup(sval_str);
+    }
+    else {
+      token.string = strdup("(null)");
+    }
 
     if (ival_str != NULL) {
       token.ival = (int)strtol(ival_str + 5, NULL, 10);
@@ -119,7 +218,7 @@ int main(int argc, char **argv) {
     if (rval_str != NULL) {
       token.rval = strtod(rval_str + 5, NULL);
     }
-
+    
     tokens[num_tokens++] = token;
   }
   fclose(input_file);
@@ -132,9 +231,10 @@ int main(int argc, char **argv) {
   printf("-----------------------------\n");
   for (int i = 0; i < num_tokens; i++) {
     Token token = tokens[i];
-    printf("(%-2d, %-2d):  %-12d%-8d%-12f%-12s\n", token.col, token.row, token.type, token.ival, token.rval, token.string);
+    printf("(%-2d, %-2d):  %-12d%-8d%-12f%s\n", token.col, token.row, token.type, token.ival, token.rval, token.string);
   }
 
+  /*
   for (int i = 0; i < num_tokens; i++) {
     Token token = tokens[i];
     if(token.type == T_INTNUM || token.type == T_REALNUM) {
@@ -142,6 +242,7 @@ int main(int argc, char **argv) {
       print_ast(ast, "");
     }
   }
+  */
 
   int index = 0;
   AstNode* root = parse_program(&index);

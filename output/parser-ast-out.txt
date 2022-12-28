@@ -1,3 +1,5 @@
-AST_PROGRAM: nameid
-    AST_VAR: id
-    AST_FUNCTION: test
+AST_PROGRAM: main
+    AST_VAR (INT_TYPE): foo
+    AST_FUNCTION (INT_TYPE): bar
+        AST_ARG (INT_TYPE): bizz
+        AST_RETURN: bizz

@@ -119,6 +119,24 @@ AstNode* parse_program(int* index) {
         assignment->right = NULL;
         add_child_node(program, assignment);
       }
+      else if(tokens[*index].type == T_LEFTPAR) {
+        AstNode* call = malloc(sizeof(AstNode));
+        call->type = AST_CALL;
+        call->val_type = tokens[--(*index)].string;
+        (*index)++;
+        call->data.value.int_val = tokens[++(*index)].ival;
+        call->left = NULL;
+        call->right = NULL;
+        add_child_node(program, call);
+      }
+    } else if (tokens[*index].type == T_PRINT) {
+      (*index)+=2;
+      AstNode* print = malloc(sizeof(AstNode));
+      print->type = AST_PRINT;
+      print->val_type = tokens[(*index)++].string;
+      print->left = NULL;
+      print->right = NULL;
+      add_child_node(program, print);
     }
   }
 
@@ -177,8 +195,14 @@ void print_ast(AstNode *node, char* indent) {
     case AST_RETURN:
       printf("%sAST_RETURN: %s\n", indent, node->data.value.char_val);
       break;
+    case AST_PRINT:
+      printf("%sAST_PRINT: %s\n", indent, node->val_type);
+      break;
     case AST_ASSIGN:
       printf("%sAST_ASSIGN: %s=%d\n", indent, node->val_type, node->data.value.int_val);
+      break;
+    case AST_CALL:
+      printf("%sAST_CALL: %s(%d)\n", indent, node->val_type, node->data.value.int_val);
       break;
     default:
       fprintf(stderr, "Unexpected AST type '%d'\n", node->type);

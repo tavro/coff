@@ -43,6 +43,7 @@ enum AstNodeType {
     AST_REAL,
     AST_FUNCTIONHEAD,
     AST_PROCEDUREHEAD,
+    AST_PRINT,
     AST_PARAMETER,
     AST_CAST
 };

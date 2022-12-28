@@ -1,5 +1,8 @@
 AST_PROGRAM: main
     AST_VAR (INT_TYPE): foo
+    AST_ASSIGN: foo=20
     AST_FUNCTION (INT_TYPE): bar
         AST_ARG (INT_TYPE): bizz
-        AST_RETURN: bizz
+        AST_RETURN: foo
+    AST_CALL: bar(10)
+    AST_PRINT: foo

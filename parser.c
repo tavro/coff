@@ -134,12 +134,23 @@ AstNode* parse_program(int* index) {
       if(tokens[*index].type == T_ASSIGN) {
         AstNode* assignment = malloc(sizeof(AstNode));
         assignment->type = AST_ASSIGN;
-        assignment->val_type = tokens[--(*index)].string;
+
+        AstNode* lhs = malloc(sizeof(AstNode));
+        lhs->type = AST_ID;
+        lhs->data.value.char_val = tokens[--(*index)].string;
+        //assignment->val_type = tokens[--(*index)].string;
         (*index)++;
-        assignment->data.value.int_val = tokens[++(*index)].ival;
-        s->value = assignment->data.value.int_val;
-        assignment->left = NULL;
-        assignment->right = NULL;
+
+        AstNode* rhs = malloc(sizeof(AstNode));
+        rhs->type = AST_INTEGER;
+        rhs->data.value.int_val = tokens[++(*index)].ival;
+        //assignment->data.value.int_val = tokens[++(*index)].ival;
+        //s->value = assignment->data.value.int_val;
+        s->value = rhs->data.value.int_val;
+
+        assignment->left = lhs;  // AST_ID
+        assignment->right = rhs; // AST_INTEGER
+        
         add_child_node(program, assignment);
       }
       else if(tokens[*index].type == T_LEFTPAR) {
@@ -189,7 +200,10 @@ AstNode *parse_factor(Token token) {
 void print_ast(AstNode *node, char* indent) {
   switch (node->type) {
     case AST_INTEGER:
-      printf("AST_INTEGER: %d\n", node->data.value.int_val);
+      printf("%sAST_INTEGER: %d\n", indent, node->data.value.int_val);
+      break;
+    case AST_ID:
+      printf("%sAST_ID: %s\n", indent, node->data.value.char_val);
       break;
     case AST_REAL:
       printf("AST_REAL: %f\n", node->data.value.real_val);
@@ -222,7 +236,11 @@ void print_ast(AstNode *node, char* indent) {
       printf("%sAST_PRINT: %s\n", indent, node->val_type);
       break;
     case AST_ASSIGN:
-      printf("%sAST_ASSIGN: %s=%d\n", indent, node->val_type, node->data.value.int_val);
+      printf("%sAST_ASSIGN:\n", indent);
+      if(node->left != NULL)
+        print_ast(node->left, "        ");
+      if(node->right != NULL)
+        print_ast(node->right, "        ");
       break;
     case AST_CALL:
       printf("%sAST_CALL: %s(%d)\n", indent, node->val_type, node->data.value.int_val);

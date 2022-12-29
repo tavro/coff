@@ -11,9 +11,9 @@
 #define COFF_LEXER_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdlib.h>
 
 #define MAX_SYMBOLS 1000
 #define MAX_TOKENS  1000
@@ -66,6 +66,25 @@ enum {
   T_INTNUM,
   T_REALNUM
 };
+
+enum {
+  S_INT,
+  S_REAL,
+  S_STRING,
+  S_VOID,
+  S_NONE
+};
+
+const char* symbol_to_string(int symbol) {
+  switch (symbol) {
+    case S_INT: return "S_INT";
+    case S_REAL: return "S_REAL";
+    case S_STRING: return "S_STRING";
+    case S_VOID: return "S_VOID";
+    case S_NONE: return "S_NONE";
+    default: return "INVALID TOKEN";
+  }
+}
 
 const char* token_to_string(int token) {
   switch (token) {
@@ -170,10 +189,8 @@ struct ReservedWord {
 
 typedef struct {
   int type;
-
   int row;       // Line number in source file
   int col;       // Column number in source file
-
   int ival;     // Token int value    (if applicable)
   float rval;     // Token float value  (if applicable)
   char *string;  // Token string value (if applicable)
@@ -181,7 +198,8 @@ typedef struct {
 
 typedef struct {
   char *name;
-  int type;
+  int sym_type;
+  int tok_type;
   int value;
 } Symbol;
 
@@ -208,6 +226,39 @@ Symbol* lookup_symbol(char *name);
 
 void add_token(int type, int value, char* str);
 void add_symbol(char *name, int type, int value);
-void print_symbol_table(Symbol *symbol_table, int num_symbols);
+
+void write_symbol_table(const char *filename, Symbol *symbol_table, int num_symbols) {
+  FILE *fp = fopen(filename, "w");
+  if (fp == NULL) {
+    perror("Error opening file");
+    return;
+  }
+
+  fprintf(fp, "=============================================\n");
+  fprintf(fp, "Symbol Table\n");
+  fprintf(fp, "=============================================\n");
+  fprintf(fp, "name        t_type        s_type        value\n");
+  fprintf(fp, "---------------------------------------------\n");
+  for (int i = 0; i < num_symbols; i++) {
+    Symbol symbol = symbol_table[i];
+    fprintf(fp, "%-12s%-2d=%-11s%-1d=%-12s%d\n", symbol.name, symbol.tok_type, token_to_string(symbol.tok_type), symbol.sym_type, symbol_to_string(symbol.sym_type), symbol.value);
+  }
+
+  fclose(fp);
+}
+
+void print_symbol_table(Symbol *symbol_table, int num_symbols) {
+  printf("\n");
+  printf("=============================================\n");
+  printf("Symbol Table\n");
+  printf("=============================================\n");
+  printf("name        t_type        s_type        value\n");
+  printf("---------------------------------------------\n");
+
+  for (int i = 0; i < num_symbols; i++) {
+    Symbol symbol = symbol_table[i];
+    printf("%-12s%-2d=%-11s%-1d=%-12s%d\n", symbol.name, symbol.tok_type, token_to_string(symbol.tok_type), symbol.sym_type, symbol_to_string(symbol.sym_type), symbol.value);
+  }
+}
 
 #endif

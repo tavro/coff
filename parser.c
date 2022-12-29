@@ -5,8 +5,14 @@
 
 #define MAX_LINE_LENGTH 1024
 
-Token tokens[999];
-int num_tokens = 0;
+Symbol* lookup_symbol(char *name) {
+  for (int i = 0; i < num_symbols; i++) {
+    if (strcmp(symbol_table[i].name, name) == 0) {
+      return &symbol_table[i];
+    }
+  }
+  return NULL;
+}
 
 void add_child_node(AstNode* parent, AstNode* child) {
   if (parent->children == NULL) {
@@ -38,6 +44,11 @@ AstNode* parse_var(int* index) {
   }
 
   var->data.value.char_val = tokens[++(*index)].string;
+
+  if(strcmp(var->val_type, "INT_TYPE") == 0) {
+    lookup_symbol(var->data.value.char_val)->sym_type = S_INT;
+  }
+
   var->left = NULL;
   var->right = NULL;
 
@@ -58,6 +69,11 @@ AstNode* parse_arguments(int* index) {
   }
 
   argument->data.value.char_val = tokens[++(*index)].string;
+
+  if(strcmp(argument->val_type, "INT_TYPE") == 0) {
+    lookup_symbol(argument->data.value.char_val)->sym_type = S_INT;
+  }
+
   argument->left = NULL;
   argument->right = NULL;
 
@@ -83,6 +99,11 @@ AstNode* parse_function(int* index) {
   ret->type = AST_RETURN;
   (*index)++; // skip return
   ret->data.value.char_val = tokens[++(*index)].string;
+
+  if(strcmp(function->val_type, "INT_TYPE") == 0) {
+    lookup_symbol(function->data.value.char_val)->sym_type = S_INT;
+  }
+
   ret->left = NULL;
   ret->right = NULL;
 
@@ -108,6 +129,7 @@ AstNode* parse_program(int* index) {
     } else if (tokens[*index].type == T_FUNCTION) {
       add_child_node(program, parse_function(index));
     } else if (tokens[*index].type == T_ID) {
+      Symbol* s = lookup_symbol(tokens[*index].string);
       (*index)++;
       if(tokens[*index].type == T_ASSIGN) {
         AstNode* assignment = malloc(sizeof(AstNode));
@@ -115,6 +137,7 @@ AstNode* parse_program(int* index) {
         assignment->val_type = tokens[--(*index)].string;
         (*index)++;
         assignment->data.value.int_val = tokens[++(*index)].ival;
+        s->value = assignment->data.value.int_val;
         assignment->left = NULL;
         assignment->right = NULL;
         add_child_node(program, assignment);
@@ -210,7 +233,43 @@ void print_ast(AstNode *node, char* indent) {
   }
 }
 
+void add_symbol(char *name, int type, int value) {
+  if(!lookup_symbol(name)) {
+    symbol_table[num_symbols].name = strdup(name);
+    symbol_table[num_symbols].tok_type = type;
+    symbol_table[num_symbols].sym_type = S_NONE;
+    symbol_table[num_symbols].value = value;
+    num_symbols++;
+  }
+}
+
+void read_symbol_table(const char *filename) {
+  FILE *fp = fopen(filename, "r");
+  if (!fp) {
+    perror("Error opening file");
+    return;
+  }
+
+  char line[256];
+  for (int i = 0; i < 5; i++) {
+    fgets(line, sizeof(line), fp);
+  }
+  while (fgets(line, sizeof(line), fp)) {
+    if (line[0] == '\n') {
+      break;
+    }
+    char name[32];
+    int t_type, s_type, value;
+    sscanf(line, "%s %d=T_%*s %d=S_%*s %d", name, &t_type, &s_type, &value);
+    add_symbol(name, t_type, value);
+  }
+
+  fclose(fp);
+}
+
 int main(int argc, char **argv) {
+  read_symbol_table("./output/lexer-symtab-out.txt");
+
   FILE* input_file = fopen("./output/lexer-tokens-out.txt", "r");
   if (input_file == NULL) {
     fprintf(stderr, "Error: Unable to open input file\n");
@@ -271,6 +330,9 @@ int main(int argc, char **argv) {
   int index = 0;
   AstNode* root = parse_program(&index);
   print_ast(root, "");
+
+  print_symbol_table(symbol_table, num_symbols);
+  write_symbol_table("output/parser-symtab-out.txt", symbol_table, num_symbols);
 
   return 0;
 }

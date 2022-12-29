@@ -1,5 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
+/*
+ * Copyright (c) 2022 Isak Horvath <isakhorvath@gmail.com>
+ *
+ * The Coff Compiler is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation
+ *
+ */
+
+#ifndef COFF_PARSER_H
+#define COFF_PARSER_H
+
+#include "lexer.h"
 
 enum AstNodeType {
     AST_PROGRAM,
@@ -68,62 +79,6 @@ typedef struct AstNode {
   int num_children;
 } AstNode;
 
-enum {
-  T_EOF,
-  T_ERROR,
-  T_EQ,
-  T_DOT,
-  T_SEMICOLON,
-  T_COLON,
-  T_LEFTBRACKET,
-  T_RIGHTBRACKET,
-  T_LEFTPAR,
-  T_RIGHTPAR,
-  T_COMMA,
-  T_LESSTHAN,
-  T_GREATERTHAN,
-  T_ADD,
-  T_SUB,
-  T_MUL,
-  T_RDIV,
-  T_IF,
-  T_DO,
-  T_ASSIGN,
-  T_NOTEQ,
-  T_OR,
-  T_VAR,
-  T_END,
-  T_AND,
-  T_ARG,
-  T_IDIV,
-  T_MOD,
-  T_NOT,
-  T_THEN,
-  T_ELSE,
-  T_CONST,
-  T_ARRAY,
-  T_BEGIN,
-  T_WHILE,
-  T_ELSIF,
-  T_PRINT,
-  T_RETURN,
-  T_ID,
-  T_PROGRAM,
-  T_PROCEDURE,
-  T_FUNCTION,
-  T_INTTYPE,
-  T_REALTYPE,
-  T_INTNUM,
-  T_REALNUM
-};
-
-typedef struct {
-  int type;
-  int row;
-  int col;
-  int ival;
-  float rval;
-  char *string;
-} Token;
-
 AstNode *parse_factor(Token token);
+
+#endif

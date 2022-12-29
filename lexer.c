@@ -115,7 +115,8 @@ Symbol* lookup_symbol(char *name) {
 void add_symbol(char *name, int type, int value) {
   if(!lookup_symbol(name)) {
     symbol_table[num_symbols].name = strdup(name);
-    symbol_table[num_symbols].type = type;
+    symbol_table[num_symbols].tok_type = type;
+    symbol_table[num_symbols].sym_type = S_NONE;
     symbol_table[num_symbols].value = value;
     num_symbols++;
   }
@@ -138,40 +139,6 @@ Token *get_token(int index) {
     return NULL;
   }
   return &tokens[index];
-}
-
-void print_symbol_table(Symbol *symbol_table, int num_symbols) {
-  printf("\n");
-  printf("=============================\n");
-  printf("Symbol Table\n");
-  printf("=============================\n");
-  printf("name        type        value\n");
-  printf("-----------------------------\n");
-
-  for (int i = 0; i < num_symbols; i++) {
-    Symbol symbol = symbol_table[i];
-    printf("%-12s%-12s%d\n", symbol.name, token_to_string(symbol.type), symbol.value);
-  }
-}
-
-void write_symbol_table(Symbol *symbol_table, int num_symbols) {
-  FILE *fp = fopen("output/lexer-symtab-out.txt", "w");
-  if (fp == NULL) {
-    perror("Error opening file");
-    return;
-  }
-
-  fprintf(fp, "=============================\n");
-  fprintf(fp, "Symbol Table\n");
-  fprintf(fp, "=============================\n");
-  fprintf(fp, "name        type        value\n");
-  fprintf(fp, "-----------------------------\n");
-  for (int i = 0; i < num_symbols; i++) {
-    Symbol symbol = symbol_table[i];
-    fprintf(fp, "%-12s%-12s%d\n", symbol.name, token_to_string(symbol.type), symbol.value);
-  }
-
-  fclose(fp);
 }
 
 int main(int argc, char **argv) {
@@ -211,7 +178,7 @@ int main(int argc, char **argv) {
   fclose(fp);
 
   print_symbol_table(symbol_table, num_symbols);
-  write_symbol_table(symbol_table, num_symbols);
+  write_symbol_table("output/lexer-symtab-out.txt", symbol_table, num_symbols);
 
   return 0;
 }

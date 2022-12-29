@@ -37,20 +37,28 @@ void add_child_node(AstNode* parent, AstNode* child) {
 // var type name;
 AstNode* parse_var(int* index) {
   AstNode* var = malloc(sizeof(AstNode));
-  var->type = AST_VAR;
+  var->type = AST_VARDEC;
 
   if(tokens[++(*index)].type == T_INTTYPE) {
     var->val_type = "INT_TYPE";
   }
 
-  var->data.value.char_val = tokens[++(*index)].string;
+  AstNode* id = malloc(sizeof(AstNode));
+  id->type = AST_ID;
+  id->data.value.char_val = tokens[++(*index)].string;
+
+  //var->data.value.char_val = tokens[++(*index)].string;
 
   if(strcmp(var->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(var->data.value.char_val)->sym_type = S_INT;
+    lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
   }
 
-  var->left = NULL;
-  var->right = NULL;
+  AstNode* type = malloc(sizeof(AstNode));
+  type->type = AST_TYPE;
+  type->data.value.char_val = "int"; 
+
+  var->left = type;
+  var->right = id;
 
   (*index)++; // skip ;
 
@@ -61,21 +69,28 @@ AstNode* parse_arguments(int* index) {
   (*index)++; // skip (
   
   AstNode* argument = malloc(sizeof(AstNode));
-  argument->type = AST_ARG;
+  argument->type = AST_PARAM;
   (*index)++; // skip arg
 
   if(tokens[++(*index)].type == T_INTTYPE) {
     argument->val_type = "INT_TYPE";
   }
 
-  argument->data.value.char_val = tokens[++(*index)].string;
+  AstNode* type = malloc(sizeof(AstNode));
+  type->type = AST_TYPE;
+  type->data.value.char_val = "int"; 
+
+  AstNode* id = malloc(sizeof(AstNode));
+  id->type = AST_ID;
+  id->data.value.char_val = tokens[++(*index)].string;
+  //argument->data.value.char_val = tokens[++(*index)].string;
 
   if(strcmp(argument->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(argument->data.value.char_val)->sym_type = S_INT;
+    lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
   }
 
-  argument->left = NULL;
-  argument->right = NULL;
+  argument->left = type;
+  argument->right = id;
 
   (*index)++; // skip )
   return argument;
@@ -84,28 +99,46 @@ AstNode* parse_arguments(int* index) {
 // func int (arg int bizz) bar:
 AstNode* parse_function(int* index) {
   AstNode* function = malloc(sizeof(AstNode));
-  function->type = AST_FUNC;
+  function->type = AST_FUNCDEC;
+
+  function->children = NULL;
+  function->num_children = 0;
 
   if(tokens[++(*index)].type == T_INTTYPE) {
     function->val_type = "INT_TYPE";
   }
 
+  AstNode* functype = malloc(sizeof(AstNode));
+  functype->type = AST_TYPE;
+  functype->data.value.char_val = "int";
+  add_child_node(function, functype);
+
   function->left = parse_arguments(index);
 
-  function->data.value.char_val = tokens[++(*index)].string;
+  AstNode* funcid = malloc(sizeof(AstNode));
+  funcid->type = AST_ID;
+  funcid->data.value.char_val = tokens[++(*index)].string;
+  add_child_node(function, funcid);
+
+  //function->data.value.char_val = tokens[++(*index)].string;
 
   (*index)++; // skip :
   AstNode* ret = malloc(sizeof(AstNode));
   ret->type = AST_RETURN;
   (*index)++; // skip return
-  ret->data.value.char_val = tokens[++(*index)].string;
+
+  AstNode* id = malloc(sizeof(AstNode));
+  id->type = AST_ID;
+  id->data.value.char_val = tokens[++(*index)].string;
+  
+  ret->right = id;
+  //ret->data.value.char_val = tokens[++(*index)].string;
 
   if(strcmp(function->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(function->data.value.char_val)->sym_type = S_INT;
+    lookup_symbol(funcid->data.value.char_val)->sym_type = S_INT;
   }
 
   ret->left = NULL;
-  ret->right = NULL;
 
   function->right = ret;
 
@@ -116,8 +149,13 @@ AstNode* parse_function(int* index) {
 AstNode* parse_program(int* index) {
   AstNode* program = malloc(sizeof(AstNode));
   program->type = AST_PROGRAM;
-  program->data.value.char_val = tokens[++(*index)].string; //program id
-  program->left = NULL;
+  //program->data.value.char_val = tokens[++(*index)].string; //program id
+  
+  AstNode* prgid = malloc(sizeof(AstNode));
+  prgid->type = AST_ID;
+  prgid->data.value.char_val = tokens[++(*index)].string;
+  program->left = prgid;
+
   program->right = NULL;
   program->children = NULL;
   program->num_children = 0;
@@ -142,33 +180,49 @@ AstNode* parse_program(int* index) {
         (*index)++;
 
         AstNode* rhs = malloc(sizeof(AstNode));
-        rhs->type = AST_INTEGER;
+        rhs->type = AST_INT;
         rhs->data.value.int_val = tokens[++(*index)].ival;
         //assignment->data.value.int_val = tokens[++(*index)].ival;
         //s->value = assignment->data.value.int_val;
         s->value = rhs->data.value.int_val;
 
         assignment->left = lhs;  // AST_ID
-        assignment->right = rhs; // AST_INTEGER
+        assignment->right = rhs; // AST_INT
         
         add_child_node(program, assignment);
       }
       else if(tokens[*index].type == T_LEFTPAR) {
         AstNode* call = malloc(sizeof(AstNode));
-        call->type = AST_CALL;
-        call->val_type = tokens[--(*index)].string;
+        call->type = AST_FUNCCALL;
+
+        AstNode* id = malloc(sizeof(AstNode));
+        id->type = AST_ID;
+        id->data.value.char_val = tokens[--(*index)].string;
+
         (*index)++;
-        call->data.value.int_val = tokens[++(*index)].ival;
-        call->left = NULL;
-        call->right = NULL;
+
+        AstNode* arg = malloc(sizeof(AstNode));
+        arg->type = AST_ARG;
+        AstNode* integer = malloc(sizeof(AstNode));
+        integer->type = AST_INT;
+        integer->data.value.int_val = tokens[++(*index)].ival;
+        arg->right = integer;
+
+        call->left = id;  // AST_ID
+        call->right = arg; // AST_ARG
+
         add_child_node(program, call);
       }
     } else if (tokens[*index].type == T_PRINT) {
       (*index)+=2;
       AstNode* print = malloc(sizeof(AstNode));
       print->type = AST_PRINT;
-      print->val_type = tokens[(*index)++].string;
-      print->left = NULL;
+
+      AstNode* child = malloc(sizeof(AstNode));
+      child->type = AST_ID;
+      child->data.value.char_val = tokens[(*index)++].string;
+
+      print->left = child;
       print->right = NULL;
       add_child_node(program, print);
     }
@@ -182,7 +236,7 @@ AstNode *parse_factor(Token token) {
   switch (token.type) {
     case T_INTNUM:
       node = malloc(sizeof(AstNode));
-      node->type = AST_INTEGER;
+      node->type = AST_INT;
       node->data.value.int_val = token.ival;
       break;
     case T_REALNUM:
@@ -199,41 +253,66 @@ AstNode *parse_factor(Token token) {
 
 void print_ast(AstNode *node, char* indent) {
   switch (node->type) {
-    case AST_INTEGER:
-      printf("%sAST_INTEGER: %d\n", indent, node->data.value.int_val);
+    case AST_INT:
+      printf("%sAST_INT: %d\n", indent, node->data.value.int_val);
       break;
     case AST_ID:
       printf("%sAST_ID: %s\n", indent, node->data.value.char_val);
+      break;
+    case AST_TYPE:
+      printf("%sAST_TYPE: %s\n", indent, node->data.value.char_val);
       break;
     case AST_REAL:
       printf("AST_REAL: %f\n", node->data.value.real_val);
       break;
     case AST_PROGRAM:
-      printf("AST_PROGRAM: %s\n", node->data.value.char_val);
+      printf("AST_PROGRAM:\n");
+      if(node->left != NULL)
+        print_ast(node->left, "    ");
       // Iterate over the child nodes
       for (int i = 0; i < node->num_children; i++) {
         AstNode* child = node->children[i];
         print_ast(child, "    ");
       }
       break;
-    case AST_VAR:
-      printf("%sAST_VAR (%s): %s\n", indent, node->val_type, node->data.value.char_val);
-      break;
-    case AST_FUNC:
-      printf("%sAST_FUNCTION (%s): %s\n", indent, node->val_type, node->data.value.char_val);
+    case AST_VARDEC:
+      printf("%sAST_VARDEC:\n", indent);
       if(node->left != NULL)
         print_ast(node->left, "        ");
       if(node->right != NULL)
         print_ast(node->right, "        ");
       break;
+    case AST_FUNCDEC:
+      printf("%sAST_FUNCDEC:\n", indent);
+      for (int i = 0; i < node->num_children; i++) {
+        AstNode* child = node->children[i];
+        print_ast(child, "        ");
+      }
+      if(node->left != NULL)
+        print_ast(node->left, "        ");
+      if(node->right != NULL)
+        print_ast(node->right, "        ");
+      break;
+    case AST_PARAM:
+      printf("%sAST_PARAM:\n", indent);
+      if(node->left != NULL)
+        print_ast(node->left, "            ");
+      if(node->right != NULL)
+        print_ast(node->right, "            ");
+      break;
     case AST_ARG:
-      printf("%sAST_ARG (%s): %s\n", indent, node->val_type, node->data.value.char_val);
+      printf("%sAST_ARG:\n", indent);
+      if(node->right != NULL)
+        print_ast(node->right, "            ");
       break;
     case AST_RETURN:
-      printf("%sAST_RETURN: %s\n", indent, node->data.value.char_val);
+      printf("%sAST_RETURN:\n", indent);
+      if(node->right != NULL)
+        print_ast(node->right, "            ");
       break;
     case AST_PRINT:
-      printf("%sAST_PRINT: %s\n", indent, node->val_type);
+      printf("%sAST_PRINT:\n", indent);
+      print_ast(node->left, "        ");
       break;
     case AST_ASSIGN:
       printf("%sAST_ASSIGN:\n", indent);
@@ -242,8 +321,12 @@ void print_ast(AstNode *node, char* indent) {
       if(node->right != NULL)
         print_ast(node->right, "        ");
       break;
-    case AST_CALL:
-      printf("%sAST_CALL: %s(%d)\n", indent, node->val_type, node->data.value.int_val);
+    case AST_FUNCCALL:
+      printf("%sAST_FUNCCALL:\n", indent);
+      if(node->left != NULL)
+        print_ast(node->left, "        ");
+      if(node->right != NULL)
+        print_ast(node->right, "        ");
       break;
     default:
       fprintf(stderr, "Unexpected AST type '%d'\n", node->type);

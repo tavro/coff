@@ -14,9 +14,9 @@
 
 enum AstNodeType {
     AST_PROGRAM,
-    AST_VAR,
+    AST_VARDEC,
     AST_ARG,
-    AST_FUNC,
+    AST_FUNCDEC,
     AST_NODE,
     AST_STATEMENT,
     AST_EXPRESSION,
@@ -29,7 +29,7 @@ enum AstNodeType {
     AST_ID,
     AST_INDEXED,
     AST_ADD,
-    AST_CALL,
+    AST_FUNCCALL,
     AST_SUB,
     AST_OR,
     AST_AND,
@@ -46,17 +46,15 @@ enum AstNodeType {
     AST_WHILE,
     AST_IF,
     AST_RETURN,
-    AST_FUNCTIONCALL,
     AST_UMINUS,
     AST_NOT,
     AST_ELSIF,
-    AST_INTEGER,
+    AST_INT,
     AST_REAL,
-    AST_FUNCTIONHEAD,
-    AST_PROCEDUREHEAD,
     AST_PRINT,
-    AST_PARAMETER,
-    AST_CAST
+    AST_PARAM,
+    AST_CAST,
+    AST_TYPE
 };
 typedef enum AstNodeType AstNodeType;
 
@@ -65,7 +63,7 @@ typedef struct AstNode {
 
   char* val_type;
   union {
-    // AST_INTEGER, AST_REAL
+    // AST_INT, AST_REAL
     union {
       int int_val;
       float real_val;

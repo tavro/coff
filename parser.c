@@ -5,6 +5,13 @@
 
 #define MAX_LINE_LENGTH 1024
 
+/*
+ *
+ * Please be aware that at this point this is only a playground for me
+ * so the code will not look pretty.
+ *
+ */
+
 Symbol* lookup_symbol(char *name) {
   for (int i = 0; i < num_symbols; i++) {
     if (strcmp(symbol_table[i].name, name) == 0) {
@@ -47,8 +54,6 @@ AstNode* parse_var(int* index) {
   id->type = AST_ID;
   id->data.value.char_val = tokens[++(*index)].string;
 
-  //var->data.value.char_val = tokens[++(*index)].string;
-
   if(strcmp(var->val_type, "INT_TYPE") == 0) {
     lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
   }
@@ -83,7 +88,6 @@ AstNode* parse_arguments(int* index) {
   AstNode* id = malloc(sizeof(AstNode));
   id->type = AST_ID;
   id->data.value.char_val = tokens[++(*index)].string;
-  //argument->data.value.char_val = tokens[++(*index)].string;
 
   if(strcmp(argument->val_type, "INT_TYPE") == 0) {
     lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
@@ -120,8 +124,6 @@ AstNode* parse_function(int* index) {
   funcid->data.value.char_val = tokens[++(*index)].string;
   add_child_node(function, funcid);
 
-  //function->data.value.char_val = tokens[++(*index)].string;
-
   (*index)++; // skip :
   AstNode* ret = malloc(sizeof(AstNode));
   ret->type = AST_RETURN;
@@ -132,7 +134,6 @@ AstNode* parse_function(int* index) {
   id->data.value.char_val = tokens[++(*index)].string;
   
   ret->right = id;
-  //ret->data.value.char_val = tokens[++(*index)].string;
 
   if(strcmp(function->val_type, "INT_TYPE") == 0) {
     lookup_symbol(funcid->data.value.char_val)->sym_type = S_INT;
@@ -149,11 +150,10 @@ AstNode* parse_function(int* index) {
 AstNode* parse_program(int* index) {
   AstNode* program = malloc(sizeof(AstNode));
   program->type = AST_PROGRAM;
-  //program->data.value.char_val = tokens[++(*index)].string; //program id
   
   AstNode* prgid = malloc(sizeof(AstNode));
   prgid->type = AST_ID;
-  prgid->data.value.char_val = tokens[++(*index)].string;
+  prgid->data.value.char_val = tokens[++(*index)].string; // program id
   program->left = prgid;
 
   program->right = NULL;
@@ -176,14 +176,12 @@ AstNode* parse_program(int* index) {
         AstNode* lhs = malloc(sizeof(AstNode));
         lhs->type = AST_ID;
         lhs->data.value.char_val = tokens[--(*index)].string;
-        //assignment->val_type = tokens[--(*index)].string;
         (*index)++;
 
         AstNode* rhs = malloc(sizeof(AstNode));
         rhs->type = AST_INT;
         rhs->data.value.int_val = tokens[++(*index)].ival;
-        //assignment->data.value.int_val = tokens[++(*index)].ival;
-        //s->value = assignment->data.value.int_val;
+
         s->value = rhs->data.value.int_val;
 
         assignment->left = lhs;  // AST_ID
@@ -417,16 +415,6 @@ int main(int argc, char **argv) {
     Token token = tokens[i];
     printf("(%-2d, %-2d):  %-12d%-8d%-12f%s\n", token.col, token.row, token.type, token.ival, token.rval, token.string);
   }
-
-  /*
-  for (int i = 0; i < num_tokens; i++) {
-    Token token = tokens[i];
-    if(token.type == T_INTNUM || token.type == T_REALNUM) {
-      AstNode *ast = parse_factor(token);
-      print_ast(ast, "");
-    }
-  }
-  */
 
   int index = 0;
   AstNode* root = parse_program(&index);

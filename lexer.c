@@ -103,25 +103,6 @@ Token get_next_token() {
   return token;
 }
 
-Symbol* lookup_symbol(char *name) {
-  for (int i = 0; i < num_symbols; i++) {
-    if (strcmp(symbol_table[i].name, name) == 0) {
-      return &symbol_table[i];
-    }
-  }
-  return NULL;
-}
-
-void add_symbol(char *name, int type, int value) {
-  if(!lookup_symbol(name)) {
-    symbol_table[num_symbols].name = strdup(name);
-    symbol_table[num_symbols].tok_type = type;
-    symbol_table[num_symbols].sym_type = S_NONE;
-    symbol_table[num_symbols].value = value;
-    num_symbols++;
-  }
-}
-
 void add_token(int type, int value, char* str) {
   if (num_tokens == MAX_TOKENS) {
     // Error: token array is full

@@ -63,6 +63,8 @@ enum {
   T_FUNCTION,
   T_INTTYPE,
   T_REALTYPE,
+  T_BOOLTYPE,
+  T_STRTYPE,
   T_INTNUM,
   T_REALNUM
 };
@@ -70,7 +72,8 @@ enum {
 enum {
   S_INT,
   S_REAL,
-  S_STRING,
+  S_STR,
+  S_BOOL,
   S_VOID,
   S_NONE
 };
@@ -79,7 +82,8 @@ const char* symbol_to_string(int symbol) {
   switch (symbol) {
     case S_INT: return "S_INT";
     case S_REAL: return "S_REAL";
-    case S_STRING: return "S_STRING";
+    case S_STR: return "S_STR";
+    case S_BOOL: return "S_BOOL";
     case S_VOID: return "S_VOID";
     case S_NONE: return "S_NONE";
     default: return "INVALID TOKEN";
@@ -132,6 +136,8 @@ const char* token_to_string(int token) {
     case T_FUNCTION: return "T_FUNCTION";
     case T_INTTYPE: return "T_INTTYPE";
     case T_REALTYPE: return "T_REALTYPE";
+    case T_BOOLTYPE: return "T_BOOLTYPE";
+    case T_STRTYPE: return "T_STRTYPE";
     case T_INTNUM: return "T_INTNUM";
     case T_REALNUM: return "T_REALNUM";
     default: return "INVALID TOKEN";
@@ -161,7 +167,7 @@ struct TokenMap {
   {'\0', T_EOF}
 };
 
-#define RESERVED_WORD_COUNT 19
+#define RESERVED_WORD_COUNT 21
 struct ReservedWord {
   char *word;
   int type;
@@ -176,6 +182,8 @@ struct ReservedWord {
   {"arg", T_ARG},
   {"int", T_INTTYPE},
   {"real", T_REALTYPE},
+  {"bool", T_BOOLTYPE},
+  {"str", T_STRTYPE},
   {"then", T_THEN},
   {"else", T_ELSE},
   {"func", T_FUNCTION},
@@ -222,10 +230,26 @@ char token_string_buffer[TOKEN_STRING_BUFFER_SIZE];
 Token get_next_token();
 Token* get_token(int index);
 
-Symbol* lookup_symbol(char *name);
+Symbol* lookup_symbol(char *name) {
+  for (int i = 0; i < num_symbols; i++) {
+    if (strcmp(symbol_table[i].name, name) == 0) {
+      return &symbol_table[i];
+    }
+  }
+  return NULL;
+}
 
 void add_token(int type, int value, char* str);
-void add_symbol(char *name, int type, int value);
+
+void add_symbol(char *name, int type, int value) {
+  if(!lookup_symbol(name)) {
+    symbol_table[num_symbols].name = strdup(name);
+    symbol_table[num_symbols].tok_type = type;
+    symbol_table[num_symbols].sym_type = S_NONE;
+    symbol_table[num_symbols].value = value;
+    num_symbols++;
+  }
+}
 
 void write_symbol_table(const char *filename, Symbol *symbol_table, int num_symbols) {
   FILE *fp = fopen(filename, "w");

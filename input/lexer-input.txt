@@ -1,7 +1,10 @@
 program main:
     var int foo;
+    var str abc;
+    var bool tf;
+    var real dec;
     foo = 20;
-    func int (arg int bizz) bar:
+    func int (arg int bizz, arg int bazz) bar:
         return foo;
     ;
     bar(10);

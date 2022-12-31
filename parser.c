@@ -11,16 +11,6 @@
  * so the code will not look pretty.
  *
  */
-
-Symbol* lookup_symbol(char *name) {
-  for (int i = 0; i < num_symbols; i++) {
-    if (strcmp(symbol_table[i].name, name) == 0) {
-      return &symbol_table[i];
-    }
-  }
-  return NULL;
-}
-
 void add_child_node(AstNode* parent, AstNode* child) {
   if (parent->children == NULL) {
     parent->children = malloc(sizeof(AstNode*));
@@ -41,106 +31,200 @@ void add_child_node(AstNode* parent, AstNode* child) {
   parent->num_children++;
 }
 
-// var type name;
+/*
+ *
+ * Parses variable declaration 'var [type] [name];'
+ * Returns: Ast Node of type VARDEC with left child type & right child id
+ *
+ */
 AstNode* parse_var(int* index) {
+  (*index)+=2; // skip 'var' & 'type'
+
   AstNode* var = malloc(sizeof(AstNode));
   var->type = AST_VARDEC;
 
-  if(tokens[++(*index)].type == T_INTTYPE) {
-    var->val_type = "INT_TYPE";
-  }
-
   AstNode* id = malloc(sizeof(AstNode));
   id->type = AST_ID;
-  id->data.value.char_val = tokens[++(*index)].string;
-
-  if(strcmp(var->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
-  }
 
   AstNode* type = malloc(sizeof(AstNode));
   type->type = AST_TYPE;
-  type->data.value.char_val = "int"; 
+
+  id->data.value.char_val = tokens[(*index)--].string; // go back to 'type'
+  switch(tokens[(*index)].type) { 
+    case T_INTTYPE:
+      lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
+      type->data.value.char_val = "int";
+      break;
+    case T_REALTYPE:
+      lookup_symbol(id->data.value.char_val)->sym_type = S_REAL;
+      type->data.value.char_val = "real";
+      break;
+    case T_BOOLTYPE:
+      lookup_symbol(id->data.value.char_val)->sym_type = S_BOOL;
+      type->data.value.char_val = "bool";
+      break;
+    case T_STRTYPE:
+      lookup_symbol(id->data.value.char_val)->sym_type = S_STR;
+      type->data.value.char_val = "string";
+      break;
+    default:
+      lookup_symbol(id->data.value.char_val)->sym_type = S_VOID;
+      type->data.value.char_val = "void";
+      break;
+  }
 
   var->left = type;
   var->right = id;
 
-  (*index)++; // skip ;
+  (*index)+=2; // skip 'type' & 'name'
 
   return var;
 }
 
-AstNode* parse_arguments(int* index) {
-  (*index)++; // skip (
+/*
+ *
+ * Parses parameters '(arg [type] [name], ...)'
+ * Returns: Ast Node of type PARAMLIST with children of type PARAM. 
+ * Each PARAM node has left child type & right child id.
+ *
+ */
+AstNode* parse_params(int* index) {
+  AstNode* paramlist = malloc(sizeof(AstNode));
+  paramlist->type = AST_PARAMLIST;
+  paramlist->children = NULL;
+  paramlist->num_children = 0;
   
-  AstNode* argument = malloc(sizeof(AstNode));
-  argument->type = AST_PARAM;
-  (*index)++; // skip arg
+  (*index)++; // skip '('
+  while(tokens[(*index)].type != T_RIGHTPAR) {
+    if(tokens[(*index)].type == T_COMMA) {
+      (*index)++; // skip ','
+    }
 
-  if(tokens[++(*index)].type == T_INTTYPE) {
-    argument->val_type = "INT_TYPE";
+    AstNode* param = malloc(sizeof(AstNode));
+    param->type = AST_PARAM;
+    (*index)++; // skip 'arg'
+
+    AstNode* type = malloc(sizeof(AstNode));
+    type->type = AST_TYPE;
+
+    AstNode* id = malloc(sizeof(AstNode));
+    id->type = AST_ID;
+    id->data.value.char_val = tokens[++(*index)].string; // skip 'type'
+    switch(tokens[--(*index)].type) { // go back to 'type'
+      case T_INTTYPE:
+        lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
+        type->data.value.char_val = "int";
+        break;
+      case T_REALTYPE:
+        lookup_symbol(id->data.value.char_val)->sym_type = S_REAL;
+        type->data.value.char_val = "real";
+        break;
+      case T_BOOLTYPE:
+        lookup_symbol(id->data.value.char_val)->sym_type = S_BOOL;
+        type->data.value.char_val = "bool";
+        break;
+      case T_STRTYPE:
+        lookup_symbol(id->data.value.char_val)->sym_type = S_STR;
+        type->data.value.char_val = "string";
+        break;
+      default:
+        lookup_symbol(id->data.value.char_val)->sym_type = S_VOID;
+        type->data.value.char_val = "void";
+        break;
+    }
+    
+    param->left = type;
+    param->right = id;
+
+    add_child_node(paramlist, param);
+
+    (*index)+=2; // skip 'type' & 'name'
   }
 
-  AstNode* type = malloc(sizeof(AstNode));
-  type->type = AST_TYPE;
-  type->data.value.char_val = "int"; 
-
-  AstNode* id = malloc(sizeof(AstNode));
-  id->type = AST_ID;
-  id->data.value.char_val = tokens[++(*index)].string;
-
-  if(strcmp(argument->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(id->data.value.char_val)->sym_type = S_INT;
-  }
-
-  argument->left = type;
-  argument->right = id;
-
-  (*index)++; // skip )
-  return argument;
+  (*index)++; // skip ')'
+  return paramlist;
 }
 
-// func int (arg int bizz) bar:
+/*
+ *
+ * Parses function definitions 'func [type] (arg [type] [paramname], ...) [funcname]:'
+ * Returns: Ast Node of type FUNCDEC with left child params & right child return
+ *
+ */
 AstNode* parse_function(int* index) {
   AstNode* function = malloc(sizeof(AstNode));
   function->type = AST_FUNCDEC;
-
   function->children = NULL;
   function->num_children = 0;
 
-  if(tokens[++(*index)].type == T_INTTYPE) {
-    function->val_type = "INT_TYPE";
-  }
-
   AstNode* functype = malloc(sizeof(AstNode));
   functype->type = AST_TYPE;
-  functype->data.value.char_val = "int";
-  add_child_node(function, functype);
+  int int_type = 0;
+  switch(tokens[++(*index)].type) { // skip 'func'
+      case T_INTTYPE:
+        functype->data.value.char_val = "int";
+        int_type = 1;
+        break;
+      case T_REALTYPE:
+        functype->data.value.char_val = "real";
+        int_type = 2;
+        break;
+      case T_BOOLTYPE:
+        functype->data.value.char_val = "bool";
+        int_type = 3;
+        break;
+      case T_STRTYPE:
+        functype->data.value.char_val = "string";
+        int_type = 4;
+        break;
+      default:
+        functype->data.value.char_val = "void";
+        break;
+  }
 
-  function->left = parse_arguments(index);
+  add_child_node(function, functype);
+  (*index)++; // skip 'type'
+
+  function->left = parse_params(index);
 
   AstNode* funcid = malloc(sizeof(AstNode));
   funcid->type = AST_ID;
-  funcid->data.value.char_val = tokens[++(*index)].string;
-  add_child_node(function, funcid);
+  funcid->data.value.char_val = tokens[(*index)].string;
 
+  switch(int_type) {
+    case 1: //TODO: convert to int
+      lookup_symbol(funcid->data.value.char_val)->sym_type = S_INT;
+      break;
+    case 2:
+      lookup_symbol(funcid->data.value.char_val)->sym_type = S_REAL;
+      break;
+    case 3:
+      lookup_symbol(funcid->data.value.char_val)->sym_type = S_BOOL;
+      break;
+    case 4:
+      lookup_symbol(funcid->data.value.char_val)->sym_type = S_STR;
+      break;
+    default:
+      lookup_symbol(funcid->data.value.char_val)->sym_type = S_VOID;
+      break;
+  }
+
+  add_child_node(function, funcid);
   (*index)++; // skip :
+
   AstNode* ret = malloc(sizeof(AstNode));
   ret->type = AST_RETURN;
+
   (*index)++; // skip return
 
+  //TODO: return constants or variables
   AstNode* id = malloc(sizeof(AstNode));
   id->type = AST_ID;
   id->data.value.char_val = tokens[++(*index)].string;
-  
   ret->right = id;
-
-  if(strcmp(function->val_type, "INT_TYPE") == 0) {
-    lookup_symbol(funcid->data.value.char_val)->sym_type = S_INT;
-  }
+  //TODO: end return constants or variables
 
   ret->left = NULL;
-
   function->right = ret;
 
   return function;
@@ -154,22 +238,24 @@ AstNode* parse_program(int* index) {
   AstNode* prgid = malloc(sizeof(AstNode));
   prgid->type = AST_ID;
   prgid->data.value.char_val = tokens[++(*index)].string; // program id
+  
   program->left = prgid;
-
   program->right = NULL;
   program->children = NULL;
   program->num_children = 0;
 
-  while (*index < num_tokens) {
+  while (*index < num_tokens) { //TODO: Refactor
     (*index)++;
-    if (tokens[*index].type == T_VAR) {
+    if (tokens[*index].type == T_VAR) { // VARIABLES
       add_child_node(program, parse_var(index));
-    } else if (tokens[*index].type == T_FUNCTION) {
+    } 
+    else if (tokens[*index].type == T_FUNCTION) { // FUNCTIONS
       add_child_node(program, parse_function(index));
-    } else if (tokens[*index].type == T_ID) {
+    } 
+    else if (tokens[*index].type == T_ID) { // IDS
       Symbol* s = lookup_symbol(tokens[*index].string);
       (*index)++;
-      if(tokens[*index].type == T_ASSIGN) {
+      if(tokens[*index].type == T_ASSIGN) { // ASSIGNMENT
         AstNode* assignment = malloc(sizeof(AstNode));
         assignment->type = AST_ASSIGN;
 
@@ -189,7 +275,7 @@ AstNode* parse_program(int* index) {
         
         add_child_node(program, assignment);
       }
-      else if(tokens[*index].type == T_LEFTPAR) {
+      else if(tokens[*index].type == T_LEFTPAR) { // FUNCTION CALL
         AstNode* call = malloc(sizeof(AstNode));
         call->type = AST_FUNCCALL;
 
@@ -201,6 +287,7 @@ AstNode* parse_program(int* index) {
 
         AstNode* arg = malloc(sizeof(AstNode));
         arg->type = AST_ARG;
+
         AstNode* integer = malloc(sizeof(AstNode));
         integer->type = AST_INT;
         integer->data.value.int_val = tokens[++(*index)].ival;
@@ -211,11 +298,14 @@ AstNode* parse_program(int* index) {
 
         add_child_node(program, call);
       }
-    } else if (tokens[*index].type == T_PRINT) {
-      (*index)+=2;
+    } 
+    else if (tokens[*index].type == T_PRINT) { // PRINT
+      (*index)+=2; // skip 'print' & '('
+
       AstNode* print = malloc(sizeof(AstNode));
       print->type = AST_PRINT;
 
+      //TODO: handle constants & variables
       AstNode* child = malloc(sizeof(AstNode));
       child->type = AST_ID;
       child->data.value.char_val = tokens[(*index)++].string;
@@ -227,26 +317,6 @@ AstNode* parse_program(int* index) {
   }
 
   return program;
-}
-
-AstNode *parse_factor(Token token) {
-  AstNode *node;
-  switch (token.type) {
-    case T_INTNUM:
-      node = malloc(sizeof(AstNode));
-      node->type = AST_INT;
-      node->data.value.int_val = token.ival;
-      break;
-    case T_REALNUM:
-      node = malloc(sizeof(AstNode));
-      node->type = AST_REAL;
-      node->data.value.real_val = token.rval;
-      break;
-    default:
-      fprintf(stderr, "Unexpected token '%d'\n", token.type);
-      exit(1);
-  }
-  return node;
 }
 
 void print_ast(AstNode *node, char* indent) {
@@ -291,12 +361,19 @@ void print_ast(AstNode *node, char* indent) {
       if(node->right != NULL)
         print_ast(node->right, "        ");
       break;
+    case AST_PARAMLIST:
+      printf("%sAST_PARAMLIST:\n", indent);
+      for (int i = 0; i < node->num_children; i++) {
+        AstNode* child = node->children[i];
+        print_ast(child, "            ");
+      }
+      break;
     case AST_PARAM:
       printf("%sAST_PARAM:\n", indent);
       if(node->left != NULL)
-        print_ast(node->left, "            ");
+        print_ast(node->left, "                ");
       if(node->right != NULL)
-        print_ast(node->right, "            ");
+        print_ast(node->right, "                ");
       break;
     case AST_ARG:
       printf("%sAST_ARG:\n", indent);
@@ -329,16 +406,6 @@ void print_ast(AstNode *node, char* indent) {
     default:
       fprintf(stderr, "Unexpected AST type '%d'\n", node->type);
       exit(1);
-  }
-}
-
-void add_symbol(char *name, int type, int value) {
-  if(!lookup_symbol(name)) {
-    symbol_table[num_symbols].name = strdup(name);
-    symbol_table[num_symbols].tok_type = type;
-    symbol_table[num_symbols].sym_type = S_NONE;
-    symbol_table[num_symbols].value = value;
-    num_symbols++;
   }
 }
 

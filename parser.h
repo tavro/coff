@@ -52,6 +52,7 @@ enum AstNodeType {
     AST_INT,
     AST_REAL,
     AST_PRINT,
+    AST_PARAMLIST,
     AST_PARAM,
     AST_CAST,
     AST_TYPE
@@ -76,7 +77,5 @@ typedef struct AstNode {
   struct AstNode** children;
   int num_children;
 } AstNode;
-
-AstNode *parse_factor(Token token);
 
 #endif

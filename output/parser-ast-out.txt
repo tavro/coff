@@ -3,15 +3,25 @@ AST_PROGRAM:
     AST_VARDEC:
         AST_TYPE: int
         AST_ID: foo
+    AST_VARDEC:
+        AST_TYPE: string
+        AST_ID: abc
+    AST_VARDEC:
+        AST_TYPE: bool
+        AST_ID: tf
+    AST_VARDEC:
+        AST_TYPE: real
+        AST_ID: dec
     AST_ASSIGN:
         AST_ID: foo
         AST_INT: 20
     AST_FUNCDEC:
         AST_TYPE: int
         AST_ID: bar
-        AST_PARAM:
-            AST_TYPE: int
-            AST_ID: bizz
+        AST_PARAMLIST:
+            AST_PARAM:
+                AST_TYPE: int
+                AST_ID: bizz
         AST_RETURN:
             AST_ID: foo
     AST_FUNCCALL:

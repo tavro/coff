@@ -50,12 +50,14 @@ enum {
   T_NOT,
   T_THEN,
   T_ELSE,
+  T_TRUE,
   T_CONST,
   T_ARRAY,
   T_BEGIN,
   T_WHILE,
   T_ELSIF,
   T_PRINT,
+  T_FALSE,
   T_RETURN,
   T_ID,
   T_PROGRAM,
@@ -65,6 +67,7 @@ enum {
   T_REALTYPE,
   T_BOOLTYPE,
   T_STRTYPE,
+  T_STR,
   T_INTNUM,
   T_REALNUM
 };
@@ -167,7 +170,7 @@ struct TokenMap {
   {'\0', T_EOF}
 };
 
-#define RESERVED_WORD_COUNT 21
+#define RESERVED_WORD_COUNT 23
 struct ReservedWord {
   char *word;
   int type;
@@ -187,6 +190,8 @@ struct ReservedWord {
   {"then", T_THEN},
   {"else", T_ELSE},
   {"func", T_FUNCTION},
+  {"true", T_TRUE},
+  {"false", T_FALSE},
   {"const", T_CONST},
   {"array", T_ARRAY},
   {"begin", T_BEGIN},
@@ -209,6 +214,8 @@ typedef struct {
   int sym_type;
   int tok_type;
   int value;
+  float rval;
+  char* str_val;
 } Symbol;
 
 // Global variables

@@ -3,21 +3,21 @@ Symbol Table
 =============================================
 name        t_type        s_type        value
 ---------------------------------------------
-program     39=T_PROGRAM  5=S_NONE      0
-main        38=T_ID       5=S_NONE      0
+program     41=T_PROGRAM  5=S_NONE      0
+main        40=T_ID       5=S_NONE      0
 var         22=T_VAR      5=S_NONE      0
-int         42=T_INTTYPE  5=S_NONE      0
-foo         38=T_ID       5=S_NONE      0
-str         45=T_STRTYPE  5=S_NONE      0
-abc         38=T_ID       5=S_NONE      0
-bool        44=T_BOOLTYPE 5=S_NONE      0
-tf          38=T_ID       5=S_NONE      0
-real        43=T_REALTYPE 5=S_NONE      0
-dec         38=T_ID       5=S_NONE      0
-func        41=T_FUNCTION 5=S_NONE      0
+int         44=T_INTTYPE  5=S_NONE      0
+foo         40=T_ID       5=S_NONE      0
+str         47=T_STRTYPE  5=S_NONE      0
+abc         40=T_ID       5=S_NONE      0
+bool        46=T_BOOLTYPE 5=S_NONE      0
+tf          40=T_ID       5=S_NONE      0
+real        45=T_REALTYPE 5=S_NONE      0
+dec         40=T_ID       5=S_NONE      0
+func        43=T_FUNCTION 5=S_NONE      0
 arg         25=T_ARG      5=S_NONE      0
-bizz        38=T_ID       5=S_NONE      0
-bazz        38=T_ID       5=S_NONE      0
-bar         38=T_ID       5=S_NONE      0
-return      37=T_RETURN   5=S_NONE      0
-print       36=T_PRINT    5=S_NONE      0
+bizz        40=T_ID       5=S_NONE      0
+bazz        40=T_ID       5=S_NONE      0
+bar         40=T_ID       5=S_NONE      0
+return      39=T_RETURN   5=S_NONE      0
+print       37=T_PRINT    5=S_NONE      0

@@ -54,6 +54,7 @@ enum AstNodeType {
     AST_REAL,
     AST_BOOL,
     AST_PRINT,
+    AST_ARGLIST,
     AST_PARAMLIST,
     AST_PARAM,
     AST_CAST,

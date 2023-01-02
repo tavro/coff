@@ -22,11 +22,17 @@ AST_PROGRAM:
             AST_PARAM:
                 AST_TYPE: int
                 AST_ID: bizz
+            AST_PARAM:
+                AST_TYPE: int
+                AST_ID: bazz
         AST_RETURN:
             AST_ID: foo
     AST_FUNCCALL:
         AST_ID: bar
-        AST_ARG:
-            AST_INT: 10
+        AST_ARGLIST:
+            AST_ARG:
+                AST_ID: foo
+            AST_ARG:
+                AST_INT: 10
     AST_PRINT:
         AST_ID: foo

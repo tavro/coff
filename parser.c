@@ -339,12 +339,17 @@ AstNode* parse_program(int* index) {
 
         (*index)++; // go back to '('
 
-        AstNode* arg = malloc(sizeof(AstNode));
-        arg->type = AST_ARG;
+        AstNode* arglist = malloc(sizeof(AstNode));
+        arglist->type = AST_ARGLIST;
+        arglist->children = NULL;
+        arglist->num_children = 0;
 
-        AstNode* argument_type = malloc(sizeof(AstNode)); // TODO: Add AST argument list type
         ++(*index); // skip '('
         while(tokens[(*index)].type != T_RIGHTPAR) {
+          AstNode* arg = malloc(sizeof(AstNode));
+          arg->type = AST_ARG;
+          AstNode* argument_type = malloc(sizeof(AstNode));
+
           switch(tokens[(*index)].type) {
             case T_INTNUM:
               argument_type->type = AST_INT;
@@ -370,16 +375,19 @@ AstNode* parse_program(int* index) {
             default:
               break;
           }
+
           ++(*index);
           if(tokens[(*index)].type == T_COMMA) {
             ++(*index); // skip ','
           }
+
+          arg->right = argument_type;
+          add_child_node(arglist, arg);
         }
         (*index)--; // go back from ')'
-        arg->right = argument_type;
 
         call->left = id;  // AST_ID
-        call->right = arg; // AST_ARG
+        call->right = arglist; // AST_ARGLIST
 
         add_child_node(program, call);
       }
@@ -427,6 +435,7 @@ AstNode* parse_program(int* index) {
   return program;
 }
 
+// TODO: Refactor
 void print_ast(AstNode *node, char* indent) {
   switch (node->type) {
     case AST_INT:
@@ -445,7 +454,6 @@ void print_ast(AstNode *node, char* indent) {
       printf("AST_PROGRAM:\n");
       if(node->left != NULL)
         print_ast(node->left, "    ");
-      // Iterate over the child nodes
       for (int i = 0; i < node->num_children; i++) {
         AstNode* child = node->children[i];
         print_ast(child, "    ");
@@ -483,10 +491,17 @@ void print_ast(AstNode *node, char* indent) {
       if(node->right != NULL)
         print_ast(node->right, "                ");
       break;
+    case AST_ARGLIST:
+      printf("%sAST_ARGLIST:\n", indent);
+      for (int i = 0; i < node->num_children; i++) {
+        AstNode* child = node->children[i];
+        print_ast(child, "            ");
+      }
+      break;
     case AST_ARG:
       printf("%sAST_ARG:\n", indent);
       if(node->right != NULL)
-        print_ast(node->right, "            ");
+        print_ast(node->right, "                ");
       break;
     case AST_RETURN:
       printf("%sAST_RETURN:\n", indent);
@@ -517,6 +532,7 @@ void print_ast(AstNode *node, char* indent) {
   }
 }
 
+// TODO: Move to utils header
 void read_symbol_table(const char *filename) {
   FILE *fp = fopen(filename, "r");
   if (!fp) {
@@ -541,6 +557,7 @@ void read_symbol_table(const char *filename) {
   fclose(fp);
 }
 
+// TODO: Refactor
 int main(int argc, char **argv) {
   read_symbol_table("./output/lexer-symtab-out.txt");
 
